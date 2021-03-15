@@ -55,6 +55,10 @@ public class ClientsController {
 
     private Connection connection;
 
+    public ClientsController() {
+        this.connection = MainWindowController.connection;
+    }
+
     private final ObservableList<Client> clients = FXCollections.observableArrayList();
 
     private boolean isPassportOk(String seria, String num) {
@@ -106,17 +110,18 @@ public class ClientsController {
 
     @FXML
     void initialize() {
-        try {
-            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-            connection = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@localhost:1521:XE",
-                    "c##myuser", "mypass");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return;
-        }
+//        try {
+//            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+//            connection = DriverManager.getConnection(
+//                    "jdbc:oracle:thin:@localhost:1521:XE",
+//                    "c##myuser", "mypass");
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            return;
+//        }
 
         initColumns();
+
         try {
             fillTable();
         } catch (SQLException throwables) {

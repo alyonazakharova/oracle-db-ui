@@ -45,10 +45,13 @@ public class BooksController {
     @FXML
     private Button refreshBtn;
 
-
     private Connection connection;
     private int selectedBookTypeId;
     private final ObservableList<Book> books = FXCollections.observableArrayList();
+
+    public BooksController() {
+        this.connection = MainWindowController.connection;
+    }
 
     private void initNewBookTypeCB() throws SQLException {
         ObservableList<BookType> types = FXCollections.observableArrayList();
@@ -103,22 +106,8 @@ public class BooksController {
     @FXML
     void initialize() {
         try {
-            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-            connection = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@localhost:1521:XE",
-                    "c##myuser", "mypass");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return;
-        }
-        try {
             initNewBookTypeCB();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
-        initColumns();
-        try {
+            initColumns();
             fillTable();
         } catch (SQLException throwables) {
             throwables.printStackTrace();

@@ -55,20 +55,19 @@ public class JournalController {
     @FXML
     private Button returnBtn;
 
-
-
-    private Connection connection;
+//    public static Connection connection;
 
     private int selectedBookId;
+
     private int selectedClientId;
 
-    private SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy");
+    private final SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy");
 
     private final ObservableList<JournalRecord> records = FXCollections.observableArrayList();
 
     void initClientCB() throws SQLException {
         ObservableList<Client> clients = FXCollections.observableArrayList();
-        ResultSet rs = connection.createStatement().executeQuery(
+        ResultSet rs = MainWindowController.connection.createStatement().executeQuery(
                 "SELECT ID, LAST_NAME, FIRST_NAME, FATHER_NAME FROM CLIENTS");
         while (rs.next()) {
             clients.add(new Client(rs.getInt("ID"),
@@ -81,7 +80,7 @@ public class JournalController {
 
     void initBookCB() throws SQLException {
         ObservableList<Book> books = FXCollections.observableArrayList();
-        ResultSet rs = connection.createStatement().executeQuery(
+        ResultSet rs = MainWindowController.connection.createStatement().executeQuery(
                 "SELECT ID, NAME FROM BOOKS");
         while (rs.next()) {
             books.add(new Book(rs.getInt("ID"), rs.getString("NAME")));
@@ -91,7 +90,7 @@ public class JournalController {
 
     private int getDaysCount(int bookId) {
         try {
-            ResultSet rs = connection.createStatement().executeQuery(
+            ResultSet rs = MainWindowController.connection.createStatement().executeQuery(
                     "SELECT DAY_COUNT FROM BOOKS B JOIN BOOK_TYPES BT" +
                             " ON B.TYPE_ID=BT.ID WHERE B.ID=" + bookId);
             if (rs.next()) {
@@ -102,13 +101,13 @@ public class JournalController {
         }
         return -1;
     }
-    
+
     private void loadRecords() throws SQLException {
         String query = "SELECT J.ID, LAST_NAME, FIRST_NAME, NAME, DATE_BEG, " +
                 "DATE_END, DATE_RET FROM JOURNAL J JOIN CLIENTS C ON J.CLIENT_ID=C.ID " +
                 "JOIN BOOKS B ON J.BOOK_ID=B.ID";
 
-        Statement statement = connection.createStatement();
+        Statement statement = MainWindowController.connection.createStatement();
         ResultSet rs = statement.executeQuery(query);
         while (rs.next()) {
             JournalRecord newRecord = new JournalRecord(
@@ -145,7 +144,7 @@ public class JournalController {
 
     private int getBookId(int recordId) throws SQLException {
         String query = "SELECT BOOK_ID FROM JOURNAL WHERE ID=" + recordId;
-        Statement statement = connection.createStatement();
+        Statement statement = MainWindowController.connection.createStatement();
         ResultSet rs = statement.executeQuery(query);
         int bookId = -1;
         if (rs.next()) {
@@ -158,14 +157,13 @@ public class JournalController {
 
     private double calculateFine(int recordId, int bookId) throws SQLException {
         double fine = -1.0;
-//        int bookId = getBookId(recordId);
         String query = "SELECT FINE FROM BOOKS B JOIN BOOK_TYPES BT ON BT.ID = B.TYPE_ID WHERE B.ID=" + bookId;
-        Statement statement = connection.createStatement();
+        Statement statement = MainWindowController.connection.createStatement();
         ResultSet rs = statement.executeQuery(query);
         if (rs.next()) {
             double oneDayFine = rs.getDouble("FINE");
             query = "SELECT TRUNC(DATE_RET)-TRUNC(DATE_END) AS DAYS FROM JOURNAL WHERE ID=" + recordId;
-            statement = connection.createStatement();
+            statement = MainWindowController.connection.createStatement();
             rs = statement.executeQuery(query);
             if (rs.next()) {
                 int days = rs.getInt("DAYS");
@@ -180,36 +178,24 @@ public class JournalController {
 
     private void incBookCount(int bookId) throws SQLException {
         String query = "UPDATE BOOKS SET CNT=CNT+1 WHERE ID=" + bookId;
-        connection.createStatement().executeQuery(query);
+        MainWindowController.connection.createStatement().executeQuery(query);
     }
 
     private void decBookCount(int bookId) throws SQLException {
         String query = "UPDATE BOOKS SET CNT=CNT-1 WHERE ID=" + bookId;
-        connection.createStatement().executeQuery(query);
+        MainWindowController.connection.createStatement().executeQuery(query);
     }
 
     @FXML
     void initialize() {
         try {
-            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-            connection = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@localhost:1521:XE",
-                    "c##myuser", "mypass");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        try {
             initClientCB();
             initBookCB();
-            loadRecords();
+            initColumns();
+            fillTable();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        initColumns();
-        journalTable.setItems(records);
 
         clientCB.setOnAction(actionEvent -> {
             selectedClientId = clientCB.getValue().getId();
@@ -228,9 +214,9 @@ public class JournalController {
                 calendar.add(Calendar.DAY_OF_MONTH, daysCount);
                 Date dateEnd = calendar.getTime();
                 try {
-                    Statement stmt = connection.createStatement();
+                    Statement stmt = MainWindowController.connection.createStatement();
                     String query = "INSERT INTO JOURNAL (BOOK_ID, CLIENT_ID, DATE_BEG, DATE_END) VALUES (?, ?, ?, ?)";
-                    PreparedStatement pstmt = connection.prepareStatement(query);
+                    PreparedStatement pstmt = MainWindowController.connection.prepareStatement(query);
                     pstmt.setInt(1, selectedBookId);
                     pstmt.setInt(2, selectedClientId);
                     pstmt.setDate(3, new java.sql.Date(currentDate.getTime()));
@@ -258,7 +244,7 @@ public class JournalController {
                     String query = "UPDATE JOURNAL SET DATE_RET='" + date +
                             "' WHERE ID=" + recordId;
                     try {
-                        connection.createStatement().executeQuery(query);
+                        MainWindowController.connection.createStatement().executeQuery(query);
                         fillTable();
                         int bookId = getBookId(recordId);
                         incBookCount(bookId);

@@ -24,11 +24,33 @@ public class MainWindowController {
     @FXML
     private Tab bookTypesTab;
 
-//    public static Connection connection;
+    public static Connection connection;
+
+    public MainWindowController() {
+        try {
+            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+            connection = DriverManager.getConnection(
+                    "jdbc:oracle:thin:@localhost:1521:XE",
+                    "c##myuser", "mypass");
+        } catch (SQLException e) {
+            System.out.println("БАЛИН, ЧТО-ТО НЕ ТАК");
+            return;
+        }
+    }
 
     @FXML
     void initialize() {
         try {
+            System.out.println("MI TOOT");
+            try {
+                DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+                connection = DriverManager.getConnection(
+                        "jdbc:oracle:thin:@localhost:1521:XE",
+                        "c##myuser", "mypass");
+            } catch (SQLException e) {
+                System.out.println("БАЛИН, ЧТО-ТО НЕ ТАК");
+                return;
+            }
             AnchorPane ap1 = FXMLLoader.load(getClass().getResource("../resources/journal.fxml"));
             journalTab.setContent(ap1);
         } catch (IOException e) {
