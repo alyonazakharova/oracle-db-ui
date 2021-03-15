@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="472.0" prefWidth="730.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.zakharova.alyona.controller.BooksController">
+   <children>
+      <TableView fx:id="booksTable" layoutX="9.0" layoutY="6.0" prefHeight="466.0" prefWidth="496.0">
+        <columns>
+            <TableColumn fx:id="idColumn" prefWidth="54.39999294281006" text="ID" />
+          <TableColumn fx:id="bookNameColumn" prefWidth="217.59999084472656" text="Название" />
+            <TableColumn fx:id="countColumn" prefWidth="110.4000244140625" text="Количество" />
+          <TableColumn fx:id="typeColumn" prefWidth="113.5999755859375" text="Тип" />
+        </columns>
+      </TableView>
+      <TextField fx:id="newBookName" layoutX="512.0" layoutY="32.0" prefHeight="26.0" prefWidth="210.0" promptText="Название" />
+      <ComboBox fx:id="newBookTypeCB" layoutX="512.0" layoutY="69.0" prefHeight="26.0" prefWidth="210.0" promptText="Тип" />
+      <TextField fx:id="newBookCount" layoutX="512.0" layoutY="108.0" prefHeight="26.0" prefWidth="210.0" promptText="Количество" />
+      <Button fx:id="addBtn" layoutX="512.0" layoutY="145.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="210.0" text="Добавить книгу" />
+      <Button fx:id="deleteBtn" layoutX="512.0" layoutY="180.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="210.0" text="Удалить" />
+      <Button fx:id="refreshBtn" layoutX="651.0" layoutY="432.0" mnemonicParsing="false" text="Обновить" />
+   </children>
+</AnchorPane>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="518.0" prefWidth="734.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.zakharova.alyona.controller.MainWindowController">
+   <children>
+      <TabPane layoutY="1.0" prefHeight="520.0" prefWidth="730.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab fx:id="journalTab" text="Журнал">
+            <content>
+              <fx:include source="journal.fxml" />
+            </content>
+          </Tab>
+          <Tab fx:id="clientsTab" text="Клиенты">
+            <content>
+              <fx:include source="clients.fxml" />
+            </content>
+          </Tab>
+            <Tab fx:id="booksTab" text="Книги">
+              <content>
+                <fx:include source="books.fxml" />
+              </content>
+            </Tab>
+            <Tab fx:id="bookTypesTab" text="Типы книг">
+              <content>
+                <fx:include source="book-types.fxml" />
+              </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>

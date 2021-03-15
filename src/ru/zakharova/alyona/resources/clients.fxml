@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="472.0" prefWidth="730.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.zakharova.alyona.controller.ClientsController">
+   <children>
+      <TableView fx:id="clientsTable" layoutX="9.0" layoutY="78.0" prefHeight="394.0" prefWidth="711.0">
+        <columns>
+          <TableColumn fx:id="idColumn" prefWidth="50.400023460388184" text="ID" />
+          <TableColumn fx:id="lastNameColumn" prefWidth="120.00000381469727" text="Фамилия" />
+            <TableColumn fx:id="firstNameColumn" prefWidth="103.19999694824219" text="Имя" />
+            <TableColumn fx:id="fatherNameColumn" prefWidth="183.20001220703125" text="Отчество" />
+            <TableColumn fx:id="passSeriaColumn" prefWidth="91.199951171875" text="Серия" />
+            <TableColumn fx:id="passNumColumn" prefWidth="163.199951171875" text="Номер паспорта" />
+        </columns>
+      </TableView>
+      <TextField fx:id="lastNameField" layoutX="14.0" layoutY="8.0" prefHeight="26.0" prefWidth="250.0" promptText="Фамилия" />
+      <TextField fx:id="firstNameField" layoutX="275.0" layoutY="8.0" prefHeight="26.0" prefWidth="184.0" promptText="Имя" />
+      <TextField fx:id="fatherNameField" layoutX="469.0" layoutY="8.0" prefHeight="26.0" prefWidth="250.0" promptText="Отчество" />
+      <TextField fx:id="passSeriaField" layoutX="74.0" layoutY="41.0" prefHeight="26.0" prefWidth="101.0" promptText="Серия" />
+      <TextField fx:id="passNumField" layoutX="186.0" layoutY="42.0" prefHeight="26.0" prefWidth="140.0" promptText="Номер" />
+      <Label layoutX="20.0" layoutY="46.0" text="Паспорт" />
+      <Button fx:id="addBtn" layoutX="600.0" layoutY="41.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="118.0" text="Добавить" />
+   </children>
+</AnchorPane>
