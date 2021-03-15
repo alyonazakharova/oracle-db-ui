@@ -156,9 +156,9 @@ public class JournalController {
         return bookId;
     }
 
-    private double calculateFine(int recordId) throws SQLException {
+    private double calculateFine(int recordId, int bookId) throws SQLException {
         double fine = -1.0;
-        int bookId = getBookId(recordId);
+//        int bookId = getBookId(recordId);
         String query = "SELECT FINE FROM BOOKS B JOIN BOOK_TYPES BT ON BT.ID = B.TYPE_ID WHERE B.ID=" + bookId;
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(query);
@@ -176,6 +176,16 @@ public class JournalController {
         rs.close();
         statement.close();
         return fine;
+    }
+
+    private void incBookCount(int bookId) throws SQLException {
+        String query = "UPDATE BOOKS SET CNT=CNT+1 WHERE ID=" + bookId;
+        connection.createStatement().executeQuery(query);
+    }
+
+    private void decBookCount(int bookId) throws SQLException {
+        String query = "UPDATE BOOKS SET CNT=CNT-1 WHERE ID=" + bookId;
+        connection.createStatement().executeQuery(query);
     }
 
     @FXML
@@ -226,8 +236,9 @@ public class JournalController {
                     pstmt.setDate(3, new java.sql.Date(currentDate.getTime()));
                     pstmt.setDate(4, new java.sql.Date(dateEnd.getTime()));
                     pstmt.executeUpdate();
-
                     System.out.println(selectedBookId + " - " + selectedClientId);
+                    decBookCount(selectedBookId);
+                    fillTable();
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
@@ -249,9 +260,11 @@ public class JournalController {
                     try {
                         connection.createStatement().executeQuery(query);
                         fillTable();
+                        int bookId = getBookId(recordId);
+                        incBookCount(bookId);
 
                         if (new java.sql.Date(new Date().getTime()).after(record.getDateEnd())) {
-                            System.out.println("FINE = " + calculateFine(recordId));
+                            System.out.println("FINE = " + calculateFine(recordId, bookId));
                         }
 
                     } catch (SQLException throwables) {
