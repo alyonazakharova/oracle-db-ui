@@ -153,8 +153,8 @@ public class BooksController {
                     if (pstmt != null) {
                         try {
                             pstmt.close();
-                        } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -167,36 +167,35 @@ public class BooksController {
         });
 
         deleteBtn.setOnAction(actionEvent -> {
-                    Book selectedBook = booksTable.getSelectionModel().getSelectedItem();
-                    if (selectedBook != null) {
-                        int bookId = selectedBook.getId();
-                        String query = "DELETE FROM BOOKS WHERE ID=" + bookId;
-                        Statement stmt = null;
+            Book selectedBook = booksTable.getSelectionModel().getSelectedItem();
+            if (selectedBook != null) {
+                int bookId = selectedBook.getId();
+                String query = "DELETE FROM BOOKS WHERE ID=" + bookId;
+                Statement stmt = null;
+                try {
+                    stmt = connection.createStatement();
+                    stmt.executeQuery(query);
+                    fillTable();
+                    MainWindowController.showInfo("Книга успешно удалена", Alert.AlertType.INFORMATION);
+                } catch (SQLIntegrityConstraintViolationException e) {
+                    MainWindowController.showInfo("Упси, эту книгу нельзя удалить, " +
+                            "так как в журнале есть записи о ней", Alert.AlertType.WARNING);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                } finally {
+                    if (stmt != null) {
                         try {
-                            stmt = connection.createStatement();
-                            stmt.executeQuery(query);
-                            fillTable();
-                            MainWindowController.showInfo("Книга успешно удалена", Alert.AlertType.INFORMATION);
-                        } catch (SQLIntegrityConstraintViolationException e) {
-                            MainWindowController.showInfo("Упси, эту книгу нельзя удалить, " +
-                                            "так как в журнале есть записи о ней", Alert.AlertType.WARNING);
+                            stmt.close();
                         } catch (SQLException e) {
                             e.printStackTrace();
-                            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
-                        }  finally {
-                            if (stmt != null) {
-                                try {
-                                    stmt.close();
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                }
-                            }
                         }
-                    } else {
-                        MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
                     }
                 }
-            );
+            } else {
+                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+            }
+        });
 
         refreshBtn.setOnAction(actionEvent -> {
             fillTable();

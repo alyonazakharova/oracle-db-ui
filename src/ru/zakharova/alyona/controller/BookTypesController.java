@@ -5,12 +5,10 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import ru.zakharova.alyona.dto.Book;
 import ru.zakharova.alyona.dto.BookType;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class BookTypesController {
 
@@ -49,6 +47,7 @@ public class BookTypesController {
 
     private final Connection connection;
     private final ObservableList<BookType> booksTypes = FXCollections.observableArrayList();
+    private int selectedForUpdateTypeId = -1;
 
     public BookTypesController() {
         this.connection = MainWindowController.connection;
@@ -83,6 +82,12 @@ public class BookTypesController {
         bookTypesTable.setItems(booksTypes);
     }
 
+    private void clearInput() {
+        typeField.setText("");
+        daysField.setText("");
+        fineField.setText("");
+    }
+
     @FXML
     void initialize() {
         idColumn.setCellValueFactory(new PropertyValueFactory<BookType, Integer>("id"));
@@ -93,14 +98,126 @@ public class BookTypesController {
         fillTable();
 
         addBtn.setOnAction(actionEvent -> {
-            MainWindowController.showInfo("add button", Alert.AlertType.INFORMATION);
+            if (!typeField.getText().isEmpty()
+                    & !daysField.getText().isEmpty()
+                    & !fineField.getText().isEmpty()) {
+                int days = -1;
+                double fine = -1;
+                try {
+                    days = Integer.parseInt(daysField.getText());
+                    fine = Double.parseDouble(fineField.getText());
+                } catch (NumberFormatException e) {
+                    MainWindowController.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
+                    return;
+                }
+                String query = "INSERT INTO BOOK_TYPES (NAME, FINE, DAY_COUNT) VALUES (?, ?, ?)";
+                PreparedStatement pstmt = null;
+                try {
+                    pstmt = connection.prepareStatement(query);
+                    pstmt.setString(1, typeField.getText());
+                    pstmt.setInt(2, days);
+                    pstmt.setDouble(3, fine);
+                    pstmt.executeUpdate();
+                    MainWindowController.showInfo("Новый тип успешно добавлен", Alert.AlertType.INFORMATION);
+                    fillTable();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                } finally {
+                    if (pstmt != null) {
+                        try {
+                            pstmt.close();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } else {
+                MainWindowController.showInfo("Необходимо заполнить все поля", Alert.AlertType.WARNING);
+            }
+
+        });
+
+        bookTypesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            BookType selectedType = bookTypesTable.getSelectionModel().getSelectedItem();
+            if (selectedType == null) {
+                clearInput();
+                return;
+            }
+            selectedForUpdateTypeId = selectedType.getId();
+            typeField.setText(selectedType.getName());
+            daysField.setText(String.valueOf(selectedType.getDays()));
+            fineField.setText(String.valueOf(selectedType.getFine()));
         });
 
         updateBtn.setOnAction(actionEvent -> {
-
+            if (bookTypesTable.getSelectionModel().getSelectedItem() == null) {
+                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.INFORMATION);
+            }
+            int days = -1;
+            double fine = -1;
+            try {
+                days = Integer.parseInt(daysField.getText());
+                fine = Double.parseDouble(fineField.getText());
+            } catch (NumberFormatException e) {
+                MainWindowController.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
+                return;
+            }
+            String query = "UPDATE BOOK_TYPES SET NAME='" + typeField.getText() +
+                    "', FINE=" + fine + ", DAY_COUNT=" + days +
+                    " WHERE ID=" + selectedForUpdateTypeId;
+            Statement stmt = null;
+            try {
+                stmt = connection.createStatement();
+                stmt.executeQuery(query);
+                fillTable();
+                MainWindowController.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
+                fillTable();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+            } finally {
+                if (stmt != null) {
+                    try {
+                        stmt.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         });
 
         deleteBtn.setOnAction(actionEvent -> {
+            BookType selectedType = bookTypesTable.getSelectionModel().getSelectedItem();
+            if (selectedType != null) {
+                int typeId = selectedType.getId();
+                String query = "DELETE FROM BOOK_TYPES WHERE ID=" + typeId;
+                Statement stmt = null;
+                try {
+                    stmt = connection.createStatement();
+                    stmt.executeQuery(query);
+                    fillTable();
+                    MainWindowController.showInfo("Выбранный тип удален", Alert.AlertType.INFORMATION);
+                    fillTable();
+                } catch (SQLIntegrityConstraintViolationException e) {
+                    MainWindowController.showInfo("Невозможно удалить запись, " +
+                            "потому что на нее ссылаются записи из другой таблицы",
+                            Alert.AlertType.WARNING);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                } finally {
+                    if (stmt != null) {
+                        try {
+                            stmt.close();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } else {
+                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+            }
 
         });
     }

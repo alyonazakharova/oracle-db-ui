@@ -1,14 +1,13 @@
 -- Создать хранимую процедуру, выводящую все книги и среднее время, на которое их брали, в днях.
 create or replace procedure avg_days as
     cursor cursor1 is
-        select ID, NAME, AVG(DAYS) from
+        select ID, NAME, AVG(DAYS) AS DAYS from
             (select B.ID, NAME, AVG(trunc(DATE_RET)-trunc(DATE_BEG)) AS DAYS from BOOKS B left join JOURNAL J on B.ID = J.BOOK_ID
              where DATE_RET is not null group by B.ID, NAME
              union
              select B.ID, NAME, AVG(trunc(current_date)-trunc(DATE_BEG)) AS DAYS from BOOKS B left join JOURNAL J on B.ID = J.BOOK_ID
              where DATE_RET is null and DATE_BEG is not null group by B.ID, NAME
-             union
-             -- книги, которые вообще не брали
+             union -- книги, которые вообще не брали
              select B.ID, NAME, 0 AS DAYS from BOOKS B left join JOURNAL J on B.ID = J.BOOK_ID
              where DATE_BEG is null group by B.ID, NAME)
         group by ID, NAME;
@@ -18,27 +17,18 @@ create or replace procedure avg_days as
     days_num number;
 begin
     open cursor1;
-    fetch cursor1 into book, book_name, days_num;
-    --     DBMS_OUTPUT.ENABLE;
---     DBMS_OUTPUT.PUT_LINE('Start');
---     loop
---         fetch cursor1 into book, book_name, days_num;
---         if cursor1%notfound then
---             DBMS_OUTPUT.PUT_LINE('Fsyo');
---             exit;
---         else
---             DBMS_OUTPUT.PUT_LINE('ID = ' || book
---                 || ' NAME = ' || book_name
---                 || ' DAYS = ' || days_num);
---         end if;
---     end loop;
+    DBMS_OUTPUT.PUT_LINE('Start');
+    loop
+        fetch cursor1 into book, book_name, days_num;
+        if cursor1%notfound then
+            DBMS_OUTPUT.PUT_LINE('Fsyo');
+            exit;
+        else
+            DBMS_OUTPUT.PUT_LINE('ID = ' || book || ' NAME = ' || book_name || ' DAYS = ' || days_num);
+        end if;
+    end loop;
     close cursor1;
-end;
-
--- set serveroutput on
--- begin
---     AVG_DAYS();
--- end;
+end avg_days;
 
 
 -- Создать хранимую процедуру, имеющую два параметра «книга1» и «книга2».
@@ -77,13 +67,3 @@ begin
          from JOURNAL where BOOK_ID=book and DATE_RET is null)
     order by DAYS desc fetch first 1 row only;
 end;
-
--- set serveroutput on
--- declare
---     client number;
---     time number;
--- begin
--- max_time(13, time, client);
--- DBMS_OUTPUT.ENABLE(100);
--- DBMS_OUTPUT.PUT_LINE(client || ' - ' || time );
--- end;
