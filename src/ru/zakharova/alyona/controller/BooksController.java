@@ -45,7 +45,7 @@ public class BooksController {
     @FXML
     private Button refreshBtn;
 
-    private Connection connection;
+    private final Connection connection;
     private int selectedBookTypeId;
     private final ObservableList<Book> books = FXCollections.observableArrayList();
 
@@ -53,45 +53,54 @@ public class BooksController {
         this.connection = MainWindowController.connection;
     }
 
-    private void initNewBookTypeCB() throws SQLException {
+    private void initNewBookTypeCB() {
         ObservableList<BookType> types = FXCollections.observableArrayList();
-        ResultSet rs = connection.createStatement().executeQuery(
-                "SELECT ID, NAME FROM BOOK_TYPES");
-        while (rs.next()) {
-            types.add(new BookType(
-                    rs.getInt("ID"),
-                    rs.getString("NAME")));
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(
+                    "SELECT ID, NAME FROM BOOK_TYPES");
+            while (rs.next()) {
+                types.add(new BookType(
+                        rs.getInt("ID"),
+                        rs.getString("NAME")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
+                    "и combobox с типами книг не отработал нормально", Alert.AlertType.WARNING);
+        } finally {
+            MainWindowController.closeRsAndStmt(rs, stmt);
         }
         newBookTypeCB.setItems(types);
     }
 
-    private void loadBooks() throws SQLException {
+    private void loadBooks() {
         String query = "SELECT B.ID, B.NAME AS BOOK_NAME, B.CNT, BT.NAME AS TYPE_NAME " +
                 "FROM BOOKS B JOIN BOOK_TYPES BT on B.TYPE_ID = BT.ID";
-
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery(query);
-        while (rs.next()) {
-            books.add(new Book(
-                    rs.getInt("ID"),
-                    rs.getString("BOOK_NAME"),
-                    rs.getInt("CNT"),
-                    rs.getString("TYPE_NAME"))
-            );
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                books.add(new Book(
+                        rs.getInt("ID"),
+                        rs.getString("BOOK_NAME"),
+                        rs.getInt("CNT"),
+                        rs.getString("TYPE_NAME")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
+                    "и книжки не смогли загрузиться нормально", Alert.AlertType.WARNING);
+        } finally {
+            MainWindowController.closeRsAndStmt(rs, stmt);
         }
-        rs.close();
-        statement.close();
     }
 
-    private void initColumns() {
-        idColumn.setCellValueFactory(new PropertyValueFactory<Book, Integer>("id"));
-//        idColumn.setVisible(false);
-        bookNameColumn.setCellValueFactory(new PropertyValueFactory<Book, String>("name"));
-        countColumn.setCellValueFactory(new PropertyValueFactory<Book, Integer>("count"));
-        typeColumn.setCellValueFactory(new PropertyValueFactory<Book, String>("type"));
-    }
-
-    private void fillTable() throws SQLException {
+    private void fillTable() {
         books.clear();
         loadBooks();
         booksTable.setItems(books);
@@ -100,18 +109,19 @@ public class BooksController {
     private void clearInput() {
         newBookName.setText("");
         newBookCount.setText("");
-//        newBookTypeCB
+//        newBookTypeCB.getSelectionModel().clearSelection();
     }
 
     @FXML
     void initialize() {
-        try {
-            initNewBookTypeCB();
-            initColumns();
-            fillTable();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        idColumn.setCellValueFactory(new PropertyValueFactory<Book, Integer>("id"));
+//        idColumn.setVisible(false);
+        bookNameColumn.setCellValueFactory(new PropertyValueFactory<Book, String>("name"));
+        countColumn.setCellValueFactory(new PropertyValueFactory<Book, Integer>("count"));
+        typeColumn.setCellValueFactory(new PropertyValueFactory<Book, String>("type"));
+
+        initNewBookTypeCB();
+        fillTable();
 
         newBookTypeCB.setOnAction(actionEvent -> {
             selectedBookTypeId = newBookTypeCB.getValue().getId();
@@ -121,46 +131,75 @@ public class BooksController {
             if (!newBookName.getText().isEmpty()
                     & !newBookCount.getText().isEmpty()
                     & newBookTypeCB.getValue() != null) {
+                int count = -1;
                 try {
-                    int count = Integer.parseInt(newBookCount.getText());
-                    Statement stmt = connection.createStatement();
-                    String query = "INSERT INTO BOOKS (NAME, CNT, TYPE_ID) VALUES (?, ?, ?)";
-                    PreparedStatement pstmt = connection.prepareStatement(query);
+                    count = Integer.parseInt(newBookCount.getText());
+                } catch (NumberFormatException e) {
+                    MainWindowController.showInfo("Неверный ввод", Alert.AlertType.WARNING);
+                    return;
+                }
+                String query = "INSERT INTO BOOKS (NAME, CNT, TYPE_ID) VALUES (?, ?, ?)";
+                PreparedStatement pstmt = null;
+                try {
+                    pstmt = connection.prepareStatement(query);
                     pstmt.setString(1, newBookName.getText());
                     pstmt.setInt(2, count);
                     pstmt.setInt(3, selectedBookTypeId);
                     pstmt.executeUpdate();
-                    System.out.println("Книга добавлена");
-                    clearInput();
-                    fillTable();
-                } catch (Exception e) {
-                    System.out.println("Проверьте ввод");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    return;
+                } finally {
+                    if (pstmt != null) {
+                        try {
+                            pstmt.close();
+                        } catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
+                    }
                 }
+                MainWindowController.showInfo("Книга успешно добавлена", Alert.AlertType.INFORMATION);
+                clearInput();
+                fillTable();
             } else {
-                System.out.println("Заполните все поля");
+                MainWindowController.showInfo("Необходимо заполнить все поля", Alert.AlertType.WARNING);
             }
         });
 
         deleteBtn.setOnAction(actionEvent -> {
-            Book selectedBook = booksTable.getSelectionModel().getSelectedItem();
-            int bookId = selectedBook.getId();
-            String query = "DELETE FROM BOOKS WHERE ID=" + bookId;
-            try {
-                Statement statement = connection.createStatement();
-                statement.executeQuery(query);
-                fillTable();
-                System.out.println("КНИГА УДАЛЕНА");
-            } catch (SQLException throwables) {
-                System.out.println("ОЙ, ПОХОЖЕ ЭТУ КНИГУ НЕЛЬЗЯ УДАЛИТЬ");
-            }
-        });
+                    Book selectedBook = booksTable.getSelectionModel().getSelectedItem();
+                    if (selectedBook != null) {
+                        int bookId = selectedBook.getId();
+                        String query = "DELETE FROM BOOKS WHERE ID=" + bookId;
+                        Statement stmt = null;
+                        try {
+                            stmt = connection.createStatement();
+                            stmt.executeQuery(query);
+                            fillTable();
+                            MainWindowController.showInfo("Книга успешно удалена", Alert.AlertType.INFORMATION);
+                        } catch (SQLIntegrityConstraintViolationException e) {
+                            MainWindowController.showInfo("Упси, эту книгу нельзя удалить, " +
+                                            "так как в журнале есть записи о ней", Alert.AlertType.WARNING);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                        }  finally {
+                            if (stmt != null) {
+                                try {
+                                    stmt.close();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    } else {
+                        MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                    }
+                }
+            );
 
         refreshBtn.setOnAction(actionEvent -> {
-            try {
-                fillTable();
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
+            fillTable();
         });
     }
 }

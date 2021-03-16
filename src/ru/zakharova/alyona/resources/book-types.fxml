@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="ru.zakharova.alyona.controller.BookTypesController"
-            prefHeight="400.0" prefWidth="600.0">
 
+<AnchorPane prefHeight="472.0" prefWidth="730.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.zakharova.alyona.controller.BookTypesController">
+   <children>
+      <TableView fx:id="bookTypesTable" layoutX="14.0" layoutY="12.0" prefHeight="448.0" prefWidth="448.0">
+        <columns>
+          <TableColumn fx:id="idColumn" prefWidth="51.99996757507324" text="ID" />
+          <TableColumn fx:id="typeColumn" prefWidth="203.19995880126953" text="Тип книги" />
+            <TableColumn fx:id="daysColumn" minWidth="4.79998779296875" prefWidth="82.4000244140625" text="Кол-во дней" />
+            <TableColumn fx:id="fineColumn" prefWidth="110.39996337890625" text="Штраф, руб." />
+        </columns>
+      </TableView>
+      <TextField fx:id="typeField" layoutX="481.0" layoutY="39.0" prefHeight="26.0" prefWidth="230.0" promptText="Тип" />
+      <TextField fx:id="daysField" layoutX="481.0" layoutY="72.0" prefHeight="26.0" prefWidth="230.0" promptText="Кол-во дней" />
+      <TextField fx:id="fineField" layoutX="481.0" layoutY="107.0" prefHeight="26.0" prefWidth="230.0" promptText="Штраф" />
+      <Button fx:id="addBtn" layoutX="481.0" layoutY="143.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="230.0" text="Добавить" />
+      <Button fx:id="updateBtn" layoutX="481.0" layoutY="177.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="230.0" text="Обновить" />
+      <Button fx:id="deleteBtn" layoutX="481.0" layoutY="210.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="230.0" text="Удалить" />
+   </children>
 </AnchorPane>

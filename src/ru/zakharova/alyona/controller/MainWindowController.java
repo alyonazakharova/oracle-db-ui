@@ -2,13 +2,12 @@ package ru.zakharova.alyona.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.AnchorPane;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class MainWindowController {
 
@@ -38,19 +37,32 @@ public class MainWindowController {
         }
     }
 
+    public static void showInfo(String msg, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setHeaderText(msg);
+        alert.showAndWait();
+    }
+
+    public static void closeRsAndStmt(ResultSet rs, Statement stmt) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @FXML
     void initialize() {
         try {
-            System.out.println("MI TOOT");
-            try {
-                DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-                connection = DriverManager.getConnection(
-                        "jdbc:oracle:thin:@localhost:1521:XE",
-                        "c##myuser", "mypass");
-            } catch (SQLException e) {
-                System.out.println("БАЛИН, ЧТО-ТО НЕ ТАК");
-                return;
-            }
             AnchorPane ap1 = FXMLLoader.load(getClass().getResource("../resources/journal.fxml"));
             journalTab.setContent(ap1);
         } catch (IOException e) {

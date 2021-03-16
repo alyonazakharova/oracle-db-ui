@@ -3,10 +3,7 @@ package ru.zakharova.alyona.controller;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import ru.zakharova.alyona.dto.Book;
 import ru.zakharova.alyona.dto.Client;
@@ -55,77 +52,196 @@ public class JournalController {
     @FXML
     private Button returnBtn;
 
-//    public static Connection connection;
+    @FXML
+    private Button refreshBtn;
 
+    private final Connection connection;
     private int selectedBookId;
-
     private int selectedClientId;
-
     private final SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy");
-
     private final ObservableList<JournalRecord> records = FXCollections.observableArrayList();
 
-    void initClientCB() throws SQLException {
+    public JournalController() {
+        this.connection = MainWindowController.connection;
+    }
+
+    void initClientCB() {
         ObservableList<Client> clients = FXCollections.observableArrayList();
-        ResultSet rs = MainWindowController.connection.createStatement().executeQuery(
-                "SELECT ID, LAST_NAME, FIRST_NAME, FATHER_NAME FROM CLIENTS");
-        while (rs.next()) {
-            clients.add(new Client(rs.getInt("ID"),
-                    rs.getString("LAST_NAME"),
-                    rs.getString("FIRST_NAME"),
-                    rs.getString("FATHER_NAME")));
-        }
-        clientCB.setItems(clients);
-    }
-
-    void initBookCB() throws SQLException {
-        ObservableList<Book> books = FXCollections.observableArrayList();
-        ResultSet rs = MainWindowController.connection.createStatement().executeQuery(
-                "SELECT ID, NAME FROM BOOKS");
-        while (rs.next()) {
-            books.add(new Book(rs.getInt("ID"), rs.getString("NAME")));
-        }
-        bookCB.setItems(books);
-    }
-
-    private int getDaysCount(int bookId) {
+        String query = "SELECT ID, LAST_NAME, FIRST_NAME, FATHER_NAME FROM CLIENTS";
+        Statement stmt = null;
+        ResultSet rs = null;
         try {
-            ResultSet rs = MainWindowController.connection.createStatement().executeQuery(
-                    "SELECT DAY_COUNT FROM BOOKS B JOIN BOOK_TYPES BT" +
-                            " ON B.TYPE_ID=BT.ID WHERE B.ID=" + bookId);
-            if (rs.next()) {
-                return rs.getInt("DAY_COUNT");
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                clients.add(new Client(rs.getInt("ID"),
+                        rs.getString("LAST_NAME"),
+                        rs.getString("FIRST_NAME"),
+                        rs.getString("FATHER_NAME")));
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            clientCB.setItems(clients);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
+                    "и combobox с клиентами не отработал нормально", Alert.AlertType.WARNING);
+        } finally {
+            MainWindowController.closeRsAndStmt(rs, stmt);
         }
-        return -1;
     }
 
-    private void loadRecords() throws SQLException {
+    void initBookCB() {
+        ObservableList<Book> books = FXCollections.observableArrayList();
+        String query = "SELECT ID, NAME FROM BOOKS";
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                books.add(new Book(rs.getInt("ID"), rs.getString("NAME")));
+            }
+            bookCB.setItems(books);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
+                    "и combobox с книгами не отработал нормально", Alert.AlertType.WARNING);
+        } finally {
+            MainWindowController.closeRsAndStmt(rs, stmt);
+        }
+    }
+
+    private void loadRecords() {
         String query = "SELECT J.ID, LAST_NAME, FIRST_NAME, NAME, DATE_BEG, " +
                 "DATE_END, DATE_RET FROM JOURNAL J JOIN CLIENTS C ON J.CLIENT_ID=C.ID " +
                 "JOIN BOOKS B ON J.BOOK_ID=B.ID";
-
-        Statement statement = MainWindowController.connection.createStatement();
-        ResultSet rs = statement.executeQuery(query);
-        while (rs.next()) {
-            JournalRecord newRecord = new JournalRecord(
-                    rs.getInt("ID"),
-                    rs.getString("LAST_NAME"),
-                    rs.getString("FIRST_NAME"),
-                    rs.getString("NAME"),
-                    rs.getDate("DATE_BEG"),
-                    rs.getDate("DATE_END"),
-                    rs.getDate("DATE_RET")
-            );
-            records.add(newRecord);
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                JournalRecord newRecord = new JournalRecord(
+                        rs.getInt("ID"),
+                        rs.getString("LAST_NAME"),
+                        rs.getString("FIRST_NAME"),
+                        rs.getString("NAME"),
+                        rs.getDate("DATE_BEG"),
+                        rs.getDate("DATE_END"),
+                        rs.getDate("DATE_RET")
+                );
+                records.add(newRecord);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
+                    "и записи журнала не загрузились нормально", Alert.AlertType.WARNING);
+        } finally {
+            MainWindowController.closeRsAndStmt(rs, stmt);
         }
-        rs.close();
-        statement.close();
     }
 
-    private void initColumns() {
+    private void fillTable() {
+        records.clear();
+        loadRecords();
+        journalTable.setItems(records);
+    }
+
+    private int getBookId(int recordId) {
+        String query = "SELECT BOOK_ID FROM JOURNAL WHERE ID=" + recordId;
+        Statement stmt = null;
+        ResultSet rs = null;
+        int bookId = -1;
+        try {
+            rs = connection.createStatement().executeQuery(query);
+            if (rs.next()) {
+                bookId = rs.getInt("BOOK_ID");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+        } finally {
+            MainWindowController.closeRsAndStmt(rs, stmt);
+        }
+        return bookId;
+    }
+
+    private int getDaysCount(int bookId) {
+        String query = "SELECT DAY_COUNT FROM BOOKS B JOIN BOOK_TYPES BT" +
+                " ON B.TYPE_ID=BT.ID WHERE B.ID=" + bookId;
+        Statement stmt = null;
+        ResultSet rs = null;
+        int days = -1;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(query);
+            if (rs.next()) {
+                days = rs.getInt("DAY_COUNT");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+        } finally {
+            MainWindowController.closeRsAndStmt(rs, stmt);
+        }
+        return days;
+    }
+
+    private double calculateFine(int recordId, int bookId) {
+        double fine = -1.0;
+        String query = "SELECT FINE FROM BOOKS B JOIN BOOK_TYPES BT " +
+                "ON BT.ID = B.TYPE_ID WHERE B.ID=" + bookId;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(query);
+            if (rs.next()) {
+                double oneDayFine = rs.getDouble("FINE");
+                query = "SELECT TRUNC(DATE_RET)-TRUNC(DATE_END) AS DAYS FROM JOURNAL WHERE ID=" + recordId;
+                rs = connection.createStatement().executeQuery(query);
+                if (rs.next()) {
+                    int days = rs.getInt("DAYS");
+                    MainWindowController.showInfo(oneDayFine + " rub for " + days + "days",
+                            Alert.AlertType.INFORMATION);
+                    fine = oneDayFine * days;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+        } finally {
+            MainWindowController.closeRsAndStmt(rs, stmt);
+        }
+        return fine;
+    }
+
+    private void updateBookCount(int bookId, boolean increment) {
+        String query;
+        if (increment) {
+            query = "UPDATE BOOKS SET CNT=CNT+1 WHERE ID=" + bookId;
+        } else {
+            query = "UPDATE BOOKS SET CNT=CNT-1 WHERE ID=" + bookId;
+        }
+        Statement stmt = null;
+        try {
+            stmt = connection.createStatement();
+            stmt.executeQuery(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    @FXML
+    void initialize() {
         idColumn.setCellValueFactory(new PropertyValueFactory<JournalRecord, Integer>("id"));
 //        idColumn.setVisible(false);
         lastName.setCellValueFactory(new PropertyValueFactory<JournalRecord, String>("lastName"));
@@ -134,68 +250,10 @@ public class JournalController {
         dateBeg.setCellValueFactory(new PropertyValueFactory<JournalRecord, java.sql.Date>("dateBegin"));
         dateEnd.setCellValueFactory(new PropertyValueFactory<JournalRecord, java.sql.Date>("dateEnd"));
         dateRet.setCellValueFactory(new PropertyValueFactory<JournalRecord, java.sql.Date>("dateReturn"));
-    }
 
-    private void fillTable() throws SQLException {
-        records.clear();
-        loadRecords();
-        journalTable.setItems(records);
-    }
-
-    private int getBookId(int recordId) throws SQLException {
-        String query = "SELECT BOOK_ID FROM JOURNAL WHERE ID=" + recordId;
-        Statement statement = MainWindowController.connection.createStatement();
-        ResultSet rs = statement.executeQuery(query);
-        int bookId = -1;
-        if (rs.next()) {
-            bookId = rs.getInt("BOOK_ID");
-        }
-        rs.close();
-        statement.close();
-        return bookId;
-    }
-
-    private double calculateFine(int recordId, int bookId) throws SQLException {
-        double fine = -1.0;
-        String query = "SELECT FINE FROM BOOKS B JOIN BOOK_TYPES BT ON BT.ID = B.TYPE_ID WHERE B.ID=" + bookId;
-        Statement statement = MainWindowController.connection.createStatement();
-        ResultSet rs = statement.executeQuery(query);
-        if (rs.next()) {
-            double oneDayFine = rs.getDouble("FINE");
-            query = "SELECT TRUNC(DATE_RET)-TRUNC(DATE_END) AS DAYS FROM JOURNAL WHERE ID=" + recordId;
-            statement = MainWindowController.connection.createStatement();
-            rs = statement.executeQuery(query);
-            if (rs.next()) {
-                int days = rs.getInt("DAYS");
-                System.out.println(oneDayFine + " - for " + days);
-                fine = oneDayFine * days;
-            }
-        }
-        rs.close();
-        statement.close();
-        return fine;
-    }
-
-    private void incBookCount(int bookId) throws SQLException {
-        String query = "UPDATE BOOKS SET CNT=CNT+1 WHERE ID=" + bookId;
-        MainWindowController.connection.createStatement().executeQuery(query);
-    }
-
-    private void decBookCount(int bookId) throws SQLException {
-        String query = "UPDATE BOOKS SET CNT=CNT-1 WHERE ID=" + bookId;
-        MainWindowController.connection.createStatement().executeQuery(query);
-    }
-
-    @FXML
-    void initialize() {
-        try {
-            initClientCB();
-            initBookCB();
-            initColumns();
-            fillTable();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        initClientCB();
+        initBookCB();
+        fillTable();
 
         clientCB.setOnAction(actionEvent -> {
             selectedClientId = clientCB.getValue().getId();
@@ -213,25 +271,37 @@ public class JournalController {
                 calendar.setTime(currentDate);
                 calendar.add(Calendar.DAY_OF_MONTH, daysCount);
                 Date dateEnd = calendar.getTime();
+                String query = "INSERT INTO JOURNAL (BOOK_ID, CLIENT_ID, DATE_BEG, DATE_END) VALUES (?, ?, ?, ?)";
+                PreparedStatement pstmt = null;
                 try {
-                    Statement stmt = MainWindowController.connection.createStatement();
-                    String query = "INSERT INTO JOURNAL (BOOK_ID, CLIENT_ID, DATE_BEG, DATE_END) VALUES (?, ?, ?, ?)";
-                    PreparedStatement pstmt = MainWindowController.connection.prepareStatement(query);
+                    pstmt = connection.prepareStatement(query);
                     pstmt.setInt(1, selectedBookId);
                     pstmt.setInt(2, selectedClientId);
                     pstmt.setDate(3, new java.sql.Date(currentDate.getTime()));
                     pstmt.setDate(4, new java.sql.Date(dateEnd.getTime()));
                     pstmt.executeUpdate();
-                    System.out.println(selectedBookId + " - " + selectedClientId);
-                    decBookCount(selectedBookId);
-                    fillTable();
-                } catch (SQLException throwables) {
-                    throwables.printStackTrace();
-                }
 
-                System.out.println(getDaysCount(selectedBookId));
+                    //temp help
+                    MainWindowController.showInfo("book: " + selectedBookId +
+                            " client: " + selectedClientId,
+                            Alert.AlertType.INFORMATION);
+
+                    updateBookCount(selectedBookId, false);
+                    fillTable();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                } finally {
+                    if (pstmt != null) {
+                        try {
+                            pstmt.close();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             } else {
-                System.out.println("Выберите клиента и книгу");
+                MainWindowController.showInfo("Выберите клиента и книгу", Alert.AlertType.WARNING);
             }
         });
 
@@ -243,25 +313,36 @@ public class JournalController {
                     int recordId = record.getId();
                     String query = "UPDATE JOURNAL SET DATE_RET='" + date +
                             "' WHERE ID=" + recordId;
+//                    Statement stmt = null;
                     try {
-                        MainWindowController.connection.createStatement().executeQuery(query);
+                        connection.createStatement().executeQuery(query);
                         fillTable();
                         int bookId = getBookId(recordId);
-                        incBookCount(bookId);
-
+                        updateBookCount(bookId, true);
+                        MainWindowController.showInfo("ОК. Книга сдана вовремя", Alert.AlertType.INFORMATION);
                         if (new java.sql.Date(new Date().getTime()).after(record.getDateEnd())) {
-                            System.out.println("FINE = " + calculateFine(recordId, bookId));
+                            double fine = calculateFine(recordId, bookId);
+                            MainWindowController.showInfo("Сдача просрочена! " +
+                                    "Необходимо оплатить штраф: " + fine + " руб.",
+                                    Alert.AlertType.WARNING);
                         }
-
-                    } catch (SQLException throwables) {
-                        throwables.printStackTrace();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                     }
                 } else {
-                    System.out.println("КНИГА УЖЕ ПРИНЯТА");
+                    MainWindowController.showInfo("Книга уже приянта", Alert.AlertType.WARNING);
                 }
             } else {
-                System.out.println("НИЧЕГО НЕ ВЫБРАНО");
+                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
+        });
+
+        // Refresh combobox items after modification
+        // of clients or books tables on other tabs
+        refreshBtn.setOnAction(actionEvent -> {
+            initClientCB();
+            initBookCB();
         });
     }
 }
