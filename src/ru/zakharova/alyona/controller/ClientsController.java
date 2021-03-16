@@ -50,8 +50,15 @@ public class ClientsController {
     @FXML
     private Button addBtn;
 
+    @FXML
+    private Button updateBtn;
+
+    @FXML
+    private Button deleteBtn;
+
     private final Connection connection;
     private final ObservableList<Client> clients = FXCollections.observableArrayList();
+    private int selectedForUpdateClientId = -1;
 
     public ClientsController() {
         this.connection = MainWindowController.connection;
@@ -142,17 +149,83 @@ public class ClientsController {
 //                        error with duplicated passport
                         MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                     } finally {
-                        if (pstmt != null) {
-                            try {
-                                pstmt.close();
-                            } catch (SQLException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                        MainWindowController.closePstmt(pstmt);
                     }
                 } else {
                     MainWindowController.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
                 }
+            }
+        });
+
+        clientsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            Client selectedClient = clientsTable.getSelectionModel().getSelectedItem();
+            if (selectedClient == null) {
+                clearInput();
+                return;
+            }
+            selectedForUpdateClientId = selectedClient.getId();
+            lastNameField.setText(selectedClient.getLastName());
+            firstNameField.setText(selectedClient.getFirstName());
+            fatherNameField.setText(selectedClient.getFatherName());
+            passSeriaField.setText(selectedClient.getPassSeria());
+            passNumField.setText(selectedClient.getPassNum());
+        });
+
+        updateBtn.setOnAction(actionEvent -> {
+            if (clientsTable.getSelectionModel().getSelectedItem() == null) {
+                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+            }
+            String query = "UPDATE CLIENTS SET LAST_NAME='" + lastNameField.getText() +
+                    "', FIRST_NAME='" + firstNameField.getText() +
+                    "', FATHER_NAME='" + fatherNameField.getText() +
+                    "', PASSPORT_SERIA='" + passSeriaField.getText() +
+                    "', PASSPORT_NUM='" + passNumField.getText() +
+                    "' WHERE ID=" + selectedForUpdateClientId;
+            Statement stmt = null;
+            try {
+                stmt = connection.createStatement();
+                stmt.executeQuery(query);
+                fillTable();
+                MainWindowController.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
+                fillTable();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+            } finally {
+                if (stmt != null) {
+                    try {
+                        stmt.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        deleteBtn.setOnAction(actionEvent -> {
+            Client selectedClient = clientsTable.getSelectionModel().getSelectedItem();
+            if (selectedClient != null) {
+                int clientId = selectedClient.getId();
+                String query = "DELETE FROM CLIENTS WHERE ID=" + clientId;
+                Statement stmt = null;
+                try {
+                    stmt = connection.createStatement();
+                    stmt.executeQuery(query);
+                    fillTable();
+                    MainWindowController.showInfo("Выбранный тип удален", Alert.AlertType.INFORMATION);
+                    fillTable();
+                } catch (SQLIntegrityConstraintViolationException e) {
+                    MainWindowController.showInfo("Невозможно удалить запись, " +
+                                    "потому что на нее ссылаются записи из другой таблицы",
+                            Alert.AlertType.WARNING);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                } finally {
+                    MainWindowController.closeStmt(stmt);
+                }
+            } else {
+                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
         });
     }

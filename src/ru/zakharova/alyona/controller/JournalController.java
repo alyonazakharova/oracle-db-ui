@@ -186,6 +186,26 @@ public class JournalController {
         return days;
     }
 
+    private int getBookCount(int bookId) {
+        String query = "SELECT CNT FROM BOOKS WHERE ID=" + bookId;
+        Statement stmt = null;
+        ResultSet rs = null;
+        int cnt = -1;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(query);
+            if (rs.next()) {
+                cnt = rs.getInt("CNT");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+        } finally {
+            MainWindowController.closeRsAndStmt(rs, stmt);
+        }
+        return cnt;
+    }
+
     private double calculateFine(int recordId, int bookId) {
         double fine = -1.0;
         String query = "SELECT FINE FROM BOOKS B JOIN BOOK_TYPES BT " +
@@ -201,8 +221,6 @@ public class JournalController {
                 rs = connection.createStatement().executeQuery(query);
                 if (rs.next()) {
                     int days = rs.getInt("DAYS");
-                    MainWindowController.showInfo(oneDayFine + " rub for " + days + "days",
-                            Alert.AlertType.INFORMATION);
                     fine = oneDayFine * days;
                 }
             }
@@ -265,26 +283,26 @@ public class JournalController {
 
         okBtn.setOnAction(actionEvent -> {
             if (clientCB.getValue() != null & bookCB.getValue() != null) {
-                int daysCount = getDaysCount(selectedBookId);
-                Date currentDate = new Date();
+                if (getBookCount(selectedBookId) <= 0) {
+                    MainWindowController.showInfo("Ошибка. Книги нет в наличии", Alert.AlertType.WARNING);
+                    return;
+                }
+                Date today = new Date();
+                java.sql.Date beginDate = new java.sql.Date(today.getTime());
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(currentDate);
-                calendar.add(Calendar.DAY_OF_MONTH, daysCount);
-                Date dateEnd = calendar.getTime();
+                calendar.setTime(today);
+                calendar.add(Calendar.DAY_OF_MONTH, getDaysCount(selectedBookId));
+                java.sql.Date endDate = new java.sql.Date(calendar.getTimeInMillis());
+
                 String query = "INSERT INTO JOURNAL (BOOK_ID, CLIENT_ID, DATE_BEG, DATE_END) VALUES (?, ?, ?, ?)";
                 PreparedStatement pstmt = null;
                 try {
                     pstmt = connection.prepareStatement(query);
                     pstmt.setInt(1, selectedBookId);
                     pstmt.setInt(2, selectedClientId);
-                    pstmt.setDate(3, new java.sql.Date(currentDate.getTime()));
-                    pstmt.setDate(4, new java.sql.Date(dateEnd.getTime()));
+                    pstmt.setDate(3, beginDate);
+                    pstmt.setDate(4, endDate);
                     pstmt.executeUpdate();
-
-                    //temp help
-                    MainWindowController.showInfo("book: " + selectedBookId +
-                            " client: " + selectedClientId,
-                            Alert.AlertType.INFORMATION);
 
                     updateBookCount(selectedBookId, false);
                     fillTable();
@@ -292,13 +310,7 @@ public class JournalController {
                     e.printStackTrace();
                     MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
-                    if (pstmt != null) {
-                        try {
-                            pstmt.close();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    MainWindowController.closePstmt(pstmt);
                 }
             } else {
                 MainWindowController.showInfo("Выберите клиента и книгу", Alert.AlertType.WARNING);
@@ -313,7 +325,6 @@ public class JournalController {
                     int recordId = record.getId();
                     String query = "UPDATE JOURNAL SET DATE_RET='" + date +
                             "' WHERE ID=" + recordId;
-//                    Statement stmt = null;
                     try {
                         connection.createStatement().executeQuery(query);
                         fillTable();

@@ -5,7 +5,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import ru.zakharova.alyona.dto.Book;
 import ru.zakharova.alyona.dto.BookType;
 
 import java.sql.*;
@@ -152,7 +151,7 @@ public class BookTypesController {
 
         updateBtn.setOnAction(actionEvent -> {
             if (bookTypesTable.getSelectionModel().getSelectedItem() == null) {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.INFORMATION);
+                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
             int days = -1;
             double fine = -1;
@@ -218,7 +217,6 @@ public class BookTypesController {
             } else {
                 MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
-
         });
     }
 

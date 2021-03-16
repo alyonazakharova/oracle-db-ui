@@ -40,6 +40,9 @@ public class BooksController {
     private Button addBtn;
 
     @FXML
+    private Button updateBtn;
+
+    @FXML
     private Button deleteBtn;
 
     @FXML
@@ -48,6 +51,7 @@ public class BooksController {
     private final Connection connection;
     private int selectedBookTypeId;
     private final ObservableList<Book> books = FXCollections.observableArrayList();
+    private int selectedForUpdateBookId = -1;
 
     public BooksController() {
         this.connection = MainWindowController.connection;
@@ -150,19 +154,54 @@ public class BooksController {
                     e.printStackTrace();
                     return;
                 } finally {
-                    if (pstmt != null) {
-                        try {
-                            pstmt.close();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    MainWindowController.closePstmt(pstmt);
                 }
                 MainWindowController.showInfo("Книга успешно добавлена", Alert.AlertType.INFORMATION);
                 clearInput();
                 fillTable();
             } else {
                 MainWindowController.showInfo("Необходимо заполнить все поля", Alert.AlertType.WARNING);
+            }
+        });
+
+        booksTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            Book selectedBook = booksTable.getSelectionModel().getSelectedItem();
+            if (selectedBook == null) {
+                clearInput();
+                return;
+            }
+            selectedForUpdateBookId = selectedBook.getId();
+            newBookName.setText(selectedBook.getName());
+//            String bookType = selectedBook.getType();
+//            newBookTypeCB.getSelectionModel().select(bookType);
+            newBookCount.setText(String.valueOf(selectedBook.getCount()));
+        });
+
+        updateBtn.setOnAction(actionEvent -> {
+            if (booksTable.getSelectionModel().getSelectedItem() == null) {
+                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+            }
+            int count = -1;
+            try {
+                count = Integer.parseInt(newBookCount.getText());
+            } catch (NumberFormatException e) {
+                MainWindowController.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
+                return;
+            }
+            String query = "UPDATE BOOKS SET NAME='" + newBookName.getText() +
+                    "', CNT=" + count + " WHERE ID=" + selectedForUpdateBookId;
+            Statement stmt = null;
+            try {
+                stmt = connection.createStatement();
+                stmt.executeQuery(query);
+                fillTable();
+                MainWindowController.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
+                fillTable();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+            } finally {
+                MainWindowController.closeStmt(stmt);
             }
         });
 
@@ -184,13 +223,7 @@ public class BooksController {
                     e.printStackTrace();
                     MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
-                    if (stmt != null) {
-                        try {
-                            stmt.close();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    MainWindowController.closeStmt(stmt);
                 }
             } else {
                 MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);

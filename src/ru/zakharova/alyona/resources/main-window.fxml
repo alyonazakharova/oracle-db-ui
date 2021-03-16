@@ -28,6 +28,11 @@
                 <fx:include source="book-types.fxml" />
               </content>
             </Tab>
+            <Tab fx:id="extraTab" text="Дополнительно">
+              <content>
+                <fx:include source="extra.fxml" />
+              </content>
+            </Tab>
         </tabs>
       </TabPane>
    </children>

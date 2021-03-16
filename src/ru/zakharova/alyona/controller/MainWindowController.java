@@ -23,6 +23,9 @@ public class MainWindowController {
     @FXML
     private Tab bookTypesTab;
 
+    @FXML
+    private Tab extraTab;
+
     public static Connection connection;
 
     public MainWindowController() {
@@ -60,6 +63,26 @@ public class MainWindowController {
         }
     }
 
+    public static void closeStmt(Statement stmt) {
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void closePstmt(PreparedStatement pstmt) {
+        if (pstmt != null) {
+            try {
+                pstmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @FXML
     void initialize() {
         try {
@@ -79,6 +102,13 @@ public class MainWindowController {
         try {
             AnchorPane ap3 = FXMLLoader.load(getClass().getResource("../resources/books.fxml"));
             booksTab.setContent(ap3);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            AnchorPane ap4 = FXMLLoader.load(getClass().getResource("../resources/book-types.fxml"));
+            bookTypesTab.setContent(ap4);
         } catch (IOException e) {
             e.printStackTrace();
         }

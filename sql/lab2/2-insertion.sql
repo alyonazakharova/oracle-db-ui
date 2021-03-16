@@ -2,6 +2,7 @@
 insert into CLIENTS (first_name, last_name, father_name, passport_seria, passport_num)
 values ('Иван', 'Иванов', 'Петрович', '4002', '537264');
 
+
 --Добавить в рамках транзакции клиента, книгу и запись в журнал библиотекаря о выдачи книги этому клиенту.
 declare
     inserted_client_id number;

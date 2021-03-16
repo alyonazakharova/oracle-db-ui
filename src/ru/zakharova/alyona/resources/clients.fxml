@@ -25,6 +25,8 @@
       <TextField fx:id="passSeriaField" layoutX="74.0" layoutY="41.0" prefHeight="26.0" prefWidth="101.0" promptText="Серия" />
       <TextField fx:id="passNumField" layoutX="186.0" layoutY="42.0" prefHeight="26.0" prefWidth="140.0" promptText="Номер" />
       <Label layoutX="20.0" layoutY="46.0" text="Паспорт" />
-      <Button fx:id="addBtn" layoutX="600.0" layoutY="41.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="118.0" text="Добавить" />
+      <Button fx:id="addBtn" layoutX="338.0" layoutY="42.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="120.0" text="Добавить" />
+      <Button fx:id="updateBtn" layoutX="469.0" layoutY="43.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="120.0" text="Изменить" />
+      <Button fx:id="deleteBtn" layoutX="598.0" layoutY="43.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="120.0" text="Удалить" />
    </children>
 </AnchorPane>
