@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import ru.zakharova.alyona.Helper;
 import ru.zakharova.alyona.dto.Book;
 import ru.zakharova.alyona.dto.Client;
 import ru.zakharova.alyona.dto.JournalRecord;
@@ -62,7 +63,7 @@ public class JournalController {
     private final ObservableList<JournalRecord> records = FXCollections.observableArrayList();
 
     public JournalController() {
-        this.connection = MainWindowController.connection;
+        this.connection = LoginController.connection;
     }
 
     void initClientCB() {
@@ -82,10 +83,9 @@ public class JournalController {
             clientCB.setItems(clients);
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
-                    "и combobox с клиентами не отработал нормально", Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
     }
 
@@ -103,10 +103,9 @@ public class JournalController {
             bookCB.setItems(books);
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
-                    "и combobox с книгами не отработал нормально", Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
     }
 
@@ -133,10 +132,10 @@ public class JournalController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
+            Helper.showInfo("Кто-то чё-то плохо закодил, " +
                     "и записи журнала не загрузились нормально", Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
     }
 
@@ -158,9 +157,9 @@ public class JournalController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
         return bookId;
     }
@@ -179,9 +178,9 @@ public class JournalController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
         return days;
     }
@@ -199,9 +198,9 @@ public class JournalController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
         return cnt;
     }
@@ -226,9 +225,9 @@ public class JournalController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
         return fine;
     }
@@ -246,7 +245,7 @@ public class JournalController {
             stmt.executeQuery(query);
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
             if (stmt != null) {
                 try {
@@ -284,7 +283,7 @@ public class JournalController {
         okBtn.setOnAction(actionEvent -> {
             if (clientCB.getValue() != null & bookCB.getValue() != null) {
                 if (getBookCount(selectedBookId) <= 0) {
-                    MainWindowController.showInfo("Ошибка. Книги нет в наличии", Alert.AlertType.WARNING);
+                    Helper.showInfo("Ошибка. Книги нет в наличии", Alert.AlertType.WARNING);
                     return;
                 }
                 Date today = new Date();
@@ -308,12 +307,12 @@ public class JournalController {
                     fillTable();
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                    Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
-                    MainWindowController.closePstmt(pstmt);
+                    Helper.closePstmt(pstmt);
                 }
             } else {
-                MainWindowController.showInfo("Выберите клиента и книгу", Alert.AlertType.WARNING);
+                Helper.showInfo("Выберите клиента и книгу", Alert.AlertType.WARNING);
             }
         });
 
@@ -330,22 +329,22 @@ public class JournalController {
                         fillTable();
                         int bookId = getBookId(recordId);
                         updateBookCount(bookId, true);
-                        MainWindowController.showInfo("ОК. Книга сдана вовремя", Alert.AlertType.INFORMATION);
+                        Helper.showInfo("ОК. Книга сдана вовремя", Alert.AlertType.INFORMATION);
                         if (new java.sql.Date(new Date().getTime()).after(record.getDateEnd())) {
                             double fine = calculateFine(recordId, bookId);
-                            MainWindowController.showInfo("Сдача просрочена! " +
+                            Helper.showInfo("Сдача просрочена! " +
                                     "Необходимо оплатить штраф: " + fine + " руб.",
                                     Alert.AlertType.WARNING);
                         }
                     } catch (SQLException e) {
                         e.printStackTrace();
-                        MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                        Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                     }
                 } else {
-                    MainWindowController.showInfo("Книга уже приянта", Alert.AlertType.WARNING);
+                    Helper.showInfo("Книга уже приянта", Alert.AlertType.WARNING);
                 }
             } else {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
         });
 

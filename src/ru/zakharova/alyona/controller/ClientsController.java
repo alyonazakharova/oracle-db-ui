@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import ru.zakharova.alyona.Helper;
 import ru.zakharova.alyona.dto.Client;
 
 import java.sql.*;
@@ -61,7 +62,7 @@ public class ClientsController {
     private int selectedForUpdateClientId = -1;
 
     public ClientsController() {
-        this.connection = MainWindowController.connection;
+        this.connection = LoginController.connection;
     }
 
     private boolean isPassportOk(String seria, String num) {
@@ -87,10 +88,10 @@ public class ClientsController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
+            Helper.showInfo("Кто-то чё-то плохо закодил, " +
                     "и клиенты не смогли загрузиться нормально", Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
     }
 
@@ -142,17 +143,17 @@ public class ClientsController {
                         pstmt.setString(5, num);
                         pstmt.executeUpdate();
 
-                        MainWindowController.showInfo("Клиент успешно добавлен", Alert.AlertType.INFORMATION);
+                        Helper.showInfo("Клиент успешно добавлен", Alert.AlertType.INFORMATION);
                         clearInput();
                         fillTable();
                     } catch (SQLException e) {
 //                        error with duplicated passport
-                        MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                        Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                     } finally {
-                        MainWindowController.closePstmt(pstmt);
+                        Helper.closePstmt(pstmt);
                     }
                 } else {
-                    MainWindowController.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
+                    Helper.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
                 }
             }
         });
@@ -173,7 +174,7 @@ public class ClientsController {
 
         updateBtn.setOnAction(actionEvent -> {
             if (clientsTable.getSelectionModel().getSelectedItem() == null) {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
             String query = "UPDATE CLIENTS SET LAST_NAME='" + lastNameField.getText() +
                     "', FIRST_NAME='" + firstNameField.getText() +
@@ -186,11 +187,11 @@ public class ClientsController {
                 stmt = connection.createStatement();
                 stmt.executeQuery(query);
                 fillTable();
-                MainWindowController.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
+                Helper.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
                 fillTable();
             } catch (SQLException e) {
                 e.printStackTrace();
-                MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
             } finally {
                 if (stmt != null) {
                     try {
@@ -212,20 +213,20 @@ public class ClientsController {
                     stmt = connection.createStatement();
                     stmt.executeQuery(query);
                     fillTable();
-                    MainWindowController.showInfo("Выбранный тип удален", Alert.AlertType.INFORMATION);
+                    Helper.showInfo("Выбранный тип удален", Alert.AlertType.INFORMATION);
                     fillTable();
                 } catch (SQLIntegrityConstraintViolationException e) {
-                    MainWindowController.showInfo("Невозможно удалить запись, " +
+                    Helper.showInfo("Невозможно удалить запись, " +
                                     "потому что на нее ссылаются записи из другой таблицы",
                             Alert.AlertType.WARNING);
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                    Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
-                    MainWindowController.closeStmt(stmt);
+                    Helper.closeStmt(stmt);
                 }
             } else {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
         });
     }

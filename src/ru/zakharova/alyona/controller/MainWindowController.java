@@ -26,62 +26,62 @@ public class MainWindowController {
     @FXML
     private Tab extraTab;
 
-    public static Connection connection;
+//    public static Connection connection;
+//
+//    public MainWindowController() {
+//        try {
+//            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+//            connection = DriverManager.getConnection(
+//                    "jdbc:oracle:thin:@localhost:1521:XE",
+//                    "c##myuser", "mypass");
+//        } catch (SQLException e) {
+//            System.out.println("БАЛИН, ЧТО-ТО НЕ ТАК");
+//            return;
+//        }
+//    }
 
-    public MainWindowController() {
-        try {
-            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-            connection = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@localhost:1521:XE",
-                    "c##myuser", "mypass");
-        } catch (SQLException e) {
-            System.out.println("БАЛИН, ЧТО-ТО НЕ ТАК");
-            return;
-        }
-    }
-
-    public static void showInfo(String msg, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setHeaderText(msg);
-        alert.showAndWait();
-    }
-
-    public static void closeRsAndStmt(ResultSet rs, Statement stmt) {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        if (stmt != null) {
-            try {
-                stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void closeStmt(Statement stmt) {
-        if (stmt != null) {
-            try {
-                stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void closePstmt(PreparedStatement pstmt) {
-        if (pstmt != null) {
-            try {
-                pstmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    public static void showInfo(String msg, Alert.AlertType type) {
+//        Alert alert = new Alert(type);
+//        alert.setHeaderText(msg);
+//        alert.showAndWait();
+//    }
+//
+//    public static void closeRsAndStmt(ResultSet rs, Statement stmt) {
+//        if (rs != null) {
+//            try {
+//                rs.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        if (stmt != null) {
+//            try {
+//                stmt.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+//
+//    public static void closeStmt(Statement stmt) {
+//        if (stmt != null) {
+//            try {
+//                stmt.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+//
+//    public static void closePstmt(PreparedStatement pstmt) {
+//        if (pstmt != null) {
+//            try {
+//                pstmt.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     @FXML
     void initialize() {

@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import ru.zakharova.alyona.Helper;
 import ru.zakharova.alyona.dto.Book;
 import ru.zakharova.alyona.dto.BookType;
 
@@ -54,7 +55,7 @@ public class BooksController {
     private int selectedForUpdateBookId = -1;
 
     public BooksController() {
-        this.connection = MainWindowController.connection;
+        this.connection = LoginController.connection;
     }
 
     private void initNewBookTypeCB() {
@@ -72,10 +73,10 @@ public class BooksController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
+            Helper.showInfo("Кто-то чё-то плохо закодил, " +
                     "и combobox с типами книг не отработал нормально", Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
         newBookTypeCB.setItems(types);
     }
@@ -97,10 +98,9 @@ public class BooksController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
-                    "и книжки не смогли загрузиться нормально", Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
     }
 
@@ -139,7 +139,7 @@ public class BooksController {
                 try {
                     count = Integer.parseInt(newBookCount.getText());
                 } catch (NumberFormatException e) {
-                    MainWindowController.showInfo("Неверный ввод", Alert.AlertType.WARNING);
+                    Helper.showInfo("Неверный ввод", Alert.AlertType.WARNING);
                     return;
                 }
                 String query = "INSERT INTO BOOKS (NAME, CNT, TYPE_ID) VALUES (?, ?, ?)";
@@ -154,13 +154,13 @@ public class BooksController {
                     e.printStackTrace();
                     return;
                 } finally {
-                    MainWindowController.closePstmt(pstmt);
+                    Helper.closePstmt(pstmt);
                 }
-                MainWindowController.showInfo("Книга успешно добавлена", Alert.AlertType.INFORMATION);
+                Helper.showInfo("Книга успешно добавлена", Alert.AlertType.INFORMATION);
                 clearInput();
                 fillTable();
             } else {
-                MainWindowController.showInfo("Необходимо заполнить все поля", Alert.AlertType.WARNING);
+                Helper.showInfo("Необходимо заполнить все поля", Alert.AlertType.WARNING);
             }
         });
 
@@ -179,13 +179,13 @@ public class BooksController {
 
         updateBtn.setOnAction(actionEvent -> {
             if (booksTable.getSelectionModel().getSelectedItem() == null) {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
             int count = -1;
             try {
                 count = Integer.parseInt(newBookCount.getText());
             } catch (NumberFormatException e) {
-                MainWindowController.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
+                Helper.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
                 return;
             }
             String query = "UPDATE BOOKS SET NAME='" + newBookName.getText() +
@@ -195,13 +195,13 @@ public class BooksController {
                 stmt = connection.createStatement();
                 stmt.executeQuery(query);
                 fillTable();
-                MainWindowController.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
+                Helper.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
                 fillTable();
             } catch (SQLException e) {
                 e.printStackTrace();
-                MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
             } finally {
-                MainWindowController.closeStmt(stmt);
+                Helper.closeStmt(stmt);
             }
         });
 
@@ -215,18 +215,18 @@ public class BooksController {
                     stmt = connection.createStatement();
                     stmt.executeQuery(query);
                     fillTable();
-                    MainWindowController.showInfo("Книга успешно удалена", Alert.AlertType.INFORMATION);
+                    Helper.showInfo("Книга успешно удалена", Alert.AlertType.INFORMATION);
                 } catch (SQLIntegrityConstraintViolationException e) {
-                    MainWindowController.showInfo("Упси, эту книгу нельзя удалить, " +
+                    Helper.showInfo("Упси, эту книгу нельзя удалить, " +
                             "так как в журнале есть записи о ней", Alert.AlertType.WARNING);
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                    Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
-                    MainWindowController.closeStmt(stmt);
+                    Helper.closeStmt(stmt);
                 }
             } else {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
         });
 

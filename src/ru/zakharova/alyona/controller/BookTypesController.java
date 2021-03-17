@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import ru.zakharova.alyona.Helper;
 import ru.zakharova.alyona.dto.BookType;
 
 import java.sql.*;
@@ -49,7 +50,7 @@ public class BookTypesController {
     private int selectedForUpdateTypeId = -1;
 
     public BookTypesController() {
-        this.connection = MainWindowController.connection;
+        this.connection = LoginController.connection;
     }
 
     private void loadBookTypes() {
@@ -68,10 +69,9 @@ public class BookTypesController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
-                    "и типы книг не загрузились нормально", Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
     }
 
@@ -106,7 +106,7 @@ public class BookTypesController {
                     days = Integer.parseInt(daysField.getText());
                     fine = Double.parseDouble(fineField.getText());
                 } catch (NumberFormatException e) {
-                    MainWindowController.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
+                    Helper.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
                     return;
                 }
                 String query = "INSERT INTO BOOK_TYPES (NAME, FINE, DAY_COUNT) VALUES (?, ?, ?)";
@@ -117,11 +117,11 @@ public class BookTypesController {
                     pstmt.setInt(2, days);
                     pstmt.setDouble(3, fine);
                     pstmt.executeUpdate();
-                    MainWindowController.showInfo("Новый тип успешно добавлен", Alert.AlertType.INFORMATION);
+                    Helper.showInfo("Новый тип успешно добавлен", Alert.AlertType.INFORMATION);
                     fillTable();
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                    Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
                     if (pstmt != null) {
                         try {
@@ -132,7 +132,7 @@ public class BookTypesController {
                     }
                 }
             } else {
-                MainWindowController.showInfo("Необходимо заполнить все поля", Alert.AlertType.WARNING);
+                Helper.showInfo("Необходимо заполнить все поля", Alert.AlertType.WARNING);
             }
 
         });
@@ -151,7 +151,7 @@ public class BookTypesController {
 
         updateBtn.setOnAction(actionEvent -> {
             if (bookTypesTable.getSelectionModel().getSelectedItem() == null) {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
             int days = -1;
             double fine = -1;
@@ -159,7 +159,7 @@ public class BookTypesController {
                 days = Integer.parseInt(daysField.getText());
                 fine = Double.parseDouble(fineField.getText());
             } catch (NumberFormatException e) {
-                MainWindowController.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
+                Helper.showInfo("Проверьте ввод", Alert.AlertType.WARNING);
                 return;
             }
             String query = "UPDATE BOOK_TYPES SET NAME='" + typeField.getText() +
@@ -170,11 +170,11 @@ public class BookTypesController {
                 stmt = connection.createStatement();
                 stmt.executeQuery(query);
                 fillTable();
-                MainWindowController.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
+                Helper.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
                 fillTable();
             } catch (SQLException e) {
                 e.printStackTrace();
-                MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
             } finally {
                 if (stmt != null) {
                     try {
@@ -196,15 +196,15 @@ public class BookTypesController {
                     stmt = connection.createStatement();
                     stmt.executeQuery(query);
                     fillTable();
-                    MainWindowController.showInfo("Выбранный тип удален", Alert.AlertType.INFORMATION);
+                    Helper.showInfo("Выбранный тип удален", Alert.AlertType.INFORMATION);
                     fillTable();
                 } catch (SQLIntegrityConstraintViolationException e) {
-                    MainWindowController.showInfo("Невозможно удалить запись, " +
+                    Helper.showInfo("Невозможно удалить запись, " +
                             "потому что на нее ссылаются записи из другой таблицы",
                             Alert.AlertType.WARNING);
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                    Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
                     if (stmt != null) {
                         try {
@@ -215,7 +215,7 @@ public class BookTypesController {
                     }
                 }
             } else {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
         });
     }

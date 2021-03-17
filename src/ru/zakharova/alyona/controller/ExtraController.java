@@ -3,15 +3,22 @@ package ru.zakharova.alyona.controller;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.stage.Stage;
+import ru.zakharova.alyona.Helper;
 import ru.zakharova.alyona.dto.Client;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Handler;
 
 public class ExtraController {
 
@@ -36,7 +43,7 @@ public class ExtraController {
     private Connection connection;
 
     public ExtraController() {
-        this.connection = MainWindowController.connection;
+        this.connection = LoginController.connection;
     }
 
     private void initClientsCB() {
@@ -56,10 +63,10 @@ public class ExtraController {
             clientsCB.setItems(clients);
         } catch (SQLException e) {
             e.printStackTrace();
-            MainWindowController.showInfo("Кто-то чё-то плохо закодил, " +
+            Helper.showInfo("Кто-то чё-то плохо закодил, " +
                     "и combobox с клиентами не отработал нормально", Alert.AlertType.WARNING);
         } finally {
-            MainWindowController.closeRsAndStmt(rs, stmt);
+            Helper.closeRsAndStmt(rs, stmt);
         }
     }
 
@@ -80,17 +87,17 @@ public class ExtraController {
                     rs = stmt.executeQuery(query);
                     if (rs.next()) {
                         int books = rs.getInt("N");
-                        MainWindowController.showInfo("Количество книг на руках у выбранного клиента: " +
+                        Helper.showInfo("Количество книг на руках у выбранного клиента: " +
                                 books, Alert.AlertType.INFORMATION);
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                    Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
-                    MainWindowController.closeRsAndStmt(rs, stmt);
+                    Helper.closeRsAndStmt(rs, stmt);
                 }
             } else {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
         });
 
@@ -110,17 +117,17 @@ public class ExtraController {
                     rs = stmt.executeQuery(query);
                     if (rs.next()) {
                         int fine = rs.getInt("TOTAL_FINE");
-                        MainWindowController.showInfo("Штраф выбранного клиента составляет: " +
+                        Helper.showInfo("Штраф выбранного клиента составляет: " +
                                  + fine + " рублей", Alert.AlertType.INFORMATION);
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                    Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
-                    MainWindowController.closeRsAndStmt(rs, stmt);
+                    Helper.closeRsAndStmt(rs, stmt);
                 }
             } else {
-                MainWindowController.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
+                Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
             }
         });
 
@@ -136,14 +143,14 @@ public class ExtraController {
                 rs = stmt.executeQuery(query);
                 if (rs.next()) {
                     int maxFine = rs.getInt("RES");
-                    MainWindowController.showInfo("Максимальный штраф составляет: "
+                    Helper.showInfo("Максимальный штраф составляет: "
                             + maxFine + " рублей", Alert.AlertType.INFORMATION);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
             } finally {
-                MainWindowController.closeRsAndStmt(rs, stmt);
+                Helper.closeRsAndStmt(rs, stmt);
             }
         });
 
@@ -160,12 +167,25 @@ public class ExtraController {
                     stringBuilder.append(rs.getString("NAME"));
                     stringBuilder.append("\n");
                 }
-                MainWindowController.showInfo(stringBuilder.toString(), Alert.AlertType.INFORMATION);
+                Helper.showInfo(stringBuilder.toString(), Alert.AlertType.INFORMATION);
             } catch (SQLException e) {
                 e.printStackTrace();
-                MainWindowController.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
             } finally {
-                MainWindowController.closeRsAndStmt(rs, stmt);
+                Helper.closeRsAndStmt(rs, stmt);
+            }
+        });
+
+        exitBtn.setOnAction(actionEvent -> {
+            exitBtn.getScene().getWindow().hide();
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("../resources/login.fxml"));
+                Stage stage = new Stage();
+                stage.setTitle("Вход");
+                stage.setScene(new Scene(root));
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
     }
