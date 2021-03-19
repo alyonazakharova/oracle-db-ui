@@ -32,10 +32,11 @@ public class LoginController {
         try {
             DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
             connection = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@localhost:1521:XE",
-                    "c##myuser", "mypass");
+                    System.getenv("DB_URL"),
+                    System.getenv("DB_USER"),
+                    System.getenv("DB_PWD"));
         } catch (SQLException e) {
-            System.out.println("БАЛИН, ЧТО-ТО НЕ ТАК");
+            e.printStackTrace();
         }
     }
 
