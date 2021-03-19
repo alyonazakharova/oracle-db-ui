@@ -49,21 +49,21 @@ public class BooksController {
     @FXML
     private Button refreshBtn;
 
-    private final Connection connection;
+//    private final Connection connection;
     private int selectedBookTypeId;
     private final ObservableList<Book> books = FXCollections.observableArrayList();
     private int selectedForUpdateBookId = -1;
 
-    public BooksController() {
-        this.connection = LoginController.connection;
-    }
+//    public BooksController() {
+//        this.connection = LoginController.connection;
+//    }
 
     private void initNewBookTypeCB() {
         ObservableList<BookType> types = FXCollections.observableArrayList();
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = connection.createStatement();
+            stmt = LoginController.connection.createStatement();
             rs = stmt.executeQuery(
                     "SELECT ID, NAME FROM BOOK_TYPES");
             while (rs.next()) {
@@ -87,7 +87,7 @@ public class BooksController {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = connection.createStatement();
+            stmt = LoginController.connection.createStatement();
             rs = stmt.executeQuery(query);
             while (rs.next()) {
                 books.add(new Book(
@@ -145,7 +145,7 @@ public class BooksController {
                 String query = "INSERT INTO BOOKS (NAME, CNT, TYPE_ID) VALUES (?, ?, ?)";
                 PreparedStatement pstmt = null;
                 try {
-                    pstmt = connection.prepareStatement(query);
+                    pstmt = LoginController.connection.prepareStatement(query);
                     pstmt.setString(1, newBookName.getText());
                     pstmt.setInt(2, count);
                     pstmt.setInt(3, selectedBookTypeId);
@@ -192,7 +192,7 @@ public class BooksController {
                     "', CNT=" + count + " WHERE ID=" + selectedForUpdateBookId;
             Statement stmt = null;
             try {
-                stmt = connection.createStatement();
+                stmt = LoginController.connection.createStatement();
                 stmt.executeQuery(query);
                 fillTable();
                 Helper.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
@@ -212,7 +212,7 @@ public class BooksController {
                 String query = "DELETE FROM BOOKS WHERE ID=" + bookId;
                 Statement stmt = null;
                 try {
-                    stmt = connection.createStatement();
+                    stmt = LoginController.connection.createStatement();
                     stmt.executeQuery(query);
                     fillTable();
                     Helper.showInfo("Книга успешно удалена", Alert.AlertType.INFORMATION);

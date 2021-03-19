@@ -5,6 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import oracle.jdbc.OracleType;
+
+import java.sql.*;
 
 public class Main extends Application {
 
@@ -16,7 +19,7 @@ public class Main extends Application {
         primaryStage.show();
     }
 
-
+//public class Main {
     public static void main(String[] args) {
         launch(args);
 
@@ -29,6 +32,22 @@ public class Main extends Application {
 //        } catch (SQLException e) {
 //            System.out.println("БАЛИН, ЧТО-ТО НЕ ТАК");
 //            return;
+//        }
+//        try {
+//            int bookId = 13;
+//            int time = -1;
+//            int clientId = -1;
+//            CallableStatement cs = connection.prepareCall("{ call MAX_TIME(?, ?, ?)}");
+//            cs.setInt(1, bookId);
+//            cs.registerOutParameter(2, OracleType.NUMBER);
+//            cs.registerOutParameter(3, OracleType.NUMBER);
+//            cs.executeQuery();
+//            time = cs.getInt(2);
+//            clientId = cs.getInt(3);
+//            System.out.println(time + " * " + clientId);
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
 //        }
 //
 //        String query = "INSERT INTO USERS (LOGIN, PASSWORD) VALUES (?, ?)";

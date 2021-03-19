@@ -45,20 +45,20 @@ public class BookTypesController {
     @FXML
     private Button deleteBtn;
 
-    private final Connection connection;
+//    private final Connection connection;
     private final ObservableList<BookType> booksTypes = FXCollections.observableArrayList();
     private int selectedForUpdateTypeId = -1;
 
-    public BookTypesController() {
-        this.connection = LoginController.connection;
-    }
+//    public BookTypesController() {
+//        this.connection = LoginController.connection;
+//    }
 
     private void loadBookTypes() {
         String query = "SELECT ID, NAME, DAY_COUNT, FINE FROM BOOK_TYPES";
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = connection.createStatement();
+            stmt = LoginController.connection.createStatement();
             rs = stmt.executeQuery(query);
             while (rs.next()) {
                 booksTypes.add(new BookType(
@@ -112,7 +112,7 @@ public class BookTypesController {
                 String query = "INSERT INTO BOOK_TYPES (NAME, FINE, DAY_COUNT) VALUES (?, ?, ?)";
                 PreparedStatement pstmt = null;
                 try {
-                    pstmt = connection.prepareStatement(query);
+                    pstmt = LoginController.connection.prepareStatement(query);
                     pstmt.setString(1, typeField.getText());
                     pstmt.setInt(2, days);
                     pstmt.setDouble(3, fine);
@@ -167,7 +167,7 @@ public class BookTypesController {
                     " WHERE ID=" + selectedForUpdateTypeId;
             Statement stmt = null;
             try {
-                stmt = connection.createStatement();
+                stmt = LoginController.connection.createStatement();
                 stmt.executeQuery(query);
                 fillTable();
                 Helper.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
@@ -193,7 +193,7 @@ public class BookTypesController {
                 String query = "DELETE FROM BOOK_TYPES WHERE ID=" + typeId;
                 Statement stmt = null;
                 try {
-                    stmt = connection.createStatement();
+                    stmt = LoginController.connection.createStatement();
                     stmt.executeQuery(query);
                     fillTable();
                     Helper.showInfo("Выбранный тип удален", Alert.AlertType.INFORMATION);

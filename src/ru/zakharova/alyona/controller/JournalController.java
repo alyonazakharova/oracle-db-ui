@@ -5,6 +5,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import oracle.jdbc.OracleCallableStatement;
+import oracle.jdbc.OracleTypes;
 import ru.zakharova.alyona.Helper;
 import ru.zakharova.alyona.dto.Book;
 import ru.zakharova.alyona.dto.Client;
@@ -56,15 +58,15 @@ public class JournalController {
     @FXML
     private Button refreshBtn;
 
-    private final Connection connection;
+//    private final Connection connection;
     private int selectedBookId;
     private int selectedClientId;
     private final SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy");
     private final ObservableList<JournalRecord> records = FXCollections.observableArrayList();
 
-    public JournalController() {
-        this.connection = LoginController.connection;
-    }
+//    public JournalController() {
+//        this.connection = LoginController.connection;
+//    }
 
     void initClientCB() {
         ObservableList<Client> clients = FXCollections.observableArrayList();
@@ -72,7 +74,7 @@ public class JournalController {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = connection.createStatement();
+            stmt = LoginController.connection.createStatement();
             rs = stmt.executeQuery(query);
             while (rs.next()) {
                 clients.add(new Client(rs.getInt("ID"),
@@ -95,7 +97,7 @@ public class JournalController {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = connection.createStatement();
+            stmt = LoginController.connection.createStatement();
             rs = stmt.executeQuery(query);
             while (rs.next()) {
                 books.add(new Book(rs.getInt("ID"), rs.getString("NAME")));
@@ -116,7 +118,7 @@ public class JournalController {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = connection.createStatement();
+            stmt = LoginController.connection.createStatement();
             rs = stmt.executeQuery(query);
             while (rs.next()) {
                 JournalRecord newRecord = new JournalRecord(
@@ -132,8 +134,7 @@ public class JournalController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            Helper.showInfo("Кто-то чё-то плохо закодил, " +
-                    "и записи журнала не загрузились нормально", Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
             Helper.closeRsAndStmt(rs, stmt);
         }
@@ -145,25 +146,6 @@ public class JournalController {
         journalTable.setItems(records);
     }
 
-    private int getBookId(int recordId) {
-        String query = "SELECT BOOK_ID FROM JOURNAL WHERE ID=" + recordId;
-        Statement stmt = null;
-        ResultSet rs = null;
-        int bookId = -1;
-        try {
-            rs = connection.createStatement().executeQuery(query);
-            if (rs.next()) {
-                bookId = rs.getInt("BOOK_ID");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
-        } finally {
-            Helper.closeRsAndStmt(rs, stmt);
-        }
-        return bookId;
-    }
-
     private int getDaysCount(int bookId) {
         String query = "SELECT DAY_COUNT FROM BOOKS B JOIN BOOK_TYPES BT" +
                 " ON B.TYPE_ID=BT.ID WHERE B.ID=" + bookId;
@@ -171,7 +153,7 @@ public class JournalController {
         ResultSet rs = null;
         int days = -1;
         try {
-            stmt = connection.createStatement();
+            stmt = LoginController.connection.createStatement();
             rs = stmt.executeQuery(query);
             if (rs.next()) {
                 days = rs.getInt("DAY_COUNT");
@@ -185,82 +167,10 @@ public class JournalController {
         return days;
     }
 
-    private int getBookCount(int bookId) {
-        String query = "SELECT CNT FROM BOOKS WHERE ID=" + bookId;
-        Statement stmt = null;
-        ResultSet rs = null;
-        int cnt = -1;
-        try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(query);
-            if (rs.next()) {
-                cnt = rs.getInt("CNT");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
-        } finally {
-            Helper.closeRsAndStmt(rs, stmt);
-        }
-        return cnt;
-    }
-
-    private double calculateFine(int recordId, int bookId) {
-        double fine = -1.0;
-        String query = "SELECT FINE FROM BOOKS B JOIN BOOK_TYPES BT " +
-                "ON BT.ID = B.TYPE_ID WHERE B.ID=" + bookId;
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(query);
-            if (rs.next()) {
-                double oneDayFine = rs.getDouble("FINE");
-                query = "SELECT TRUNC(DATE_RET)-TRUNC(DATE_END) AS DAYS FROM JOURNAL WHERE ID=" + recordId;
-                rs = connection.createStatement().executeQuery(query);
-                if (rs.next()) {
-                    int days = rs.getInt("DAYS");
-                    fine = oneDayFine * days;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
-        } finally {
-            Helper.closeRsAndStmt(rs, stmt);
-        }
-        return fine;
-    }
-
-    private void updateBookCount(int bookId, boolean increment) {
-        String query;
-        if (increment) {
-            query = "UPDATE BOOKS SET CNT=CNT+1 WHERE ID=" + bookId;
-        } else {
-            query = "UPDATE BOOKS SET CNT=CNT-1 WHERE ID=" + bookId;
-        }
-        Statement stmt = null;
-        try {
-            stmt = connection.createStatement();
-            stmt.executeQuery(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
-        } finally {
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
     @FXML
     void initialize() {
         idColumn.setCellValueFactory(new PropertyValueFactory<JournalRecord, Integer>("id"));
-//        idColumn.setVisible(false);
         lastName.setCellValueFactory(new PropertyValueFactory<JournalRecord, String>("lastName"));
         firstName.setCellValueFactory(new PropertyValueFactory<JournalRecord, String>("firstName"));
         bookName.setCellValueFactory(new PropertyValueFactory<JournalRecord, String>("bookName"));
@@ -282,31 +192,29 @@ public class JournalController {
 
         okBtn.setOnAction(actionEvent -> {
             if (clientCB.getValue() != null & bookCB.getValue() != null) {
-                if (getBookCount(selectedBookId) <= 0) {
-                    Helper.showInfo("Ошибка. Книги нет в наличии", Alert.AlertType.WARNING);
-                    return;
-                }
                 Date today = new Date();
                 java.sql.Date beginDate = new java.sql.Date(today.getTime());
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(today);
                 calendar.add(Calendar.DAY_OF_MONTH, getDaysCount(selectedBookId));
+//                calendar.add(Calendar.DAY_OF_MONTH, -10);
                 java.sql.Date endDate = new java.sql.Date(calendar.getTimeInMillis());
 
                 String query = "INSERT INTO JOURNAL (BOOK_ID, CLIENT_ID, DATE_BEG, DATE_END) VALUES (?, ?, ?, ?)";
                 PreparedStatement pstmt = null;
                 try {
-                    pstmt = connection.prepareStatement(query);
+                    pstmt = LoginController.connection.prepareStatement(query);
                     pstmt.setInt(1, selectedBookId);
                     pstmt.setInt(2, selectedClientId);
                     pstmt.setDate(3, beginDate);
                     pstmt.setDate(4, endDate);
+//                    pstmt.setDate(3, endDate);
+//                    pstmt.setDate(4, endDate);
                     pstmt.executeUpdate();
-
-                    updateBookCount(selectedBookId, false);
                     fillTable();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                } catch (SQLException e)
+                {
+                    // на руках больше 10 книг либо книги нет в наличии
                     Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
                 } finally {
                     Helper.closePstmt(pstmt);
@@ -325,16 +233,24 @@ public class JournalController {
                     String query = "UPDATE JOURNAL SET DATE_RET='" + date +
                             "' WHERE ID=" + recordId;
                     try {
-                        connection.createStatement().executeQuery(query);
+                        LoginController.connection.createStatement().executeQuery(query);
                         fillTable();
-                        int bookId = getBookId(recordId);
-                        updateBookCount(bookId, true);
-                        Helper.showInfo("ОК. Книга сдана вовремя", Alert.AlertType.INFORMATION);
                         if (new java.sql.Date(new Date().getTime()).after(record.getDateEnd())) {
-                            double fine = calculateFine(recordId, bookId);
+                            int fine = -1;
+                            try {
+                                CallableStatement cs = LoginController.connection.prepareCall("{call CALCULATE_FINE(?, ?)}");
+                                cs.setInt(1, recordId);
+                                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                                cs.executeQuery();
+                                fine = cs.getInt(2);
+                            } catch (SQLException e) {
+                                Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                            }
                             Helper.showInfo("Сдача просрочена! " +
                                     "Необходимо оплатить штраф: " + fine + " руб.",
                                     Alert.AlertType.WARNING);
+                        } else {
+                            Helper.showInfo("Книга сдана вовремя", Alert.AlertType.INFORMATION);
                         }
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -348,8 +264,7 @@ public class JournalController {
             }
         });
 
-        // Refresh combobox items after modification
-        // of clients or books tables on other tabs
+        // Обновление содержимого комбобоксов при изменении данных на вкладке Клиенты или Книги
         refreshBtn.setOnAction(actionEvent -> {
             initClientCB();
             initBookCB();

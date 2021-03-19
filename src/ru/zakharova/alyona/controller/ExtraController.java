@@ -9,16 +9,17 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.stage.Stage;
+import oracle.jdbc.OracleCallableStatement;
+import oracle.jdbc.OracleType;
+import oracle.jdbc.OracleTypes;
 import ru.zakharova.alyona.Helper;
 import ru.zakharova.alyona.dto.Client;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.logging.Handler;
+import java.sql.*;
+import java.time.ZoneId;
 
 public class ExtraController {
 
@@ -40,11 +41,20 @@ public class ExtraController {
     @FXML
     private Button exitBtn;
 
-    private Connection connection;
+    @FXML
+    private DatePicker dp1;
 
-    public ExtraController() {
-        this.connection = LoginController.connection;
-    }
+    @FXML
+    private DatePicker dp2;
+
+    @FXML
+    private Button periodFineBtn;
+
+//    private final Connection connection;
+//
+//    public ExtraController() {
+//        this.connection = LoginController.connection;
+//    }
 
     private void initClientsCB() {
         ObservableList<Client> clients = FXCollections.observableArrayList();
@@ -52,7 +62,7 @@ public class ExtraController {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = connection.createStatement();
+            stmt = LoginController.connection.createStatement();
             rs = stmt.executeQuery(query);
             while (rs.next()) {
                 clients.add(new Client(rs.getInt("ID"),
@@ -63,8 +73,7 @@ public class ExtraController {
             clientsCB.setItems(clients);
         } catch (SQLException e) {
             e.printStackTrace();
-            Helper.showInfo("Кто-то чё-то плохо закодил, " +
-                    "и combobox с клиентами не отработал нормально", Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
             Helper.closeRsAndStmt(rs, stmt);
         }
@@ -78,23 +87,16 @@ public class ExtraController {
             Client selectedClient = clientsCB.getSelectionModel().getSelectedItem();
             if (selectedClient != null) {
                 int clientId = selectedClient.getId();
-                String query = "select count(ID) as N from JOURNAL where CLIENT_ID="
-                        + clientId + " and DATE_RET is null";
-                Statement stmt = null;
-                ResultSet rs = null;
                 try {
-                    stmt = connection.createStatement();
-                    rs = stmt.executeQuery(query);
-                    if (rs.next()) {
-                        int books = rs.getInt("N");
-                        Helper.showInfo("Количество книг на руках у выбранного клиента: " +
-                                books, Alert.AlertType.INFORMATION);
-                    }
+                    CallableStatement cs = LoginController.connection.prepareCall("{ call BOOKS_NOT_RETURNED(?, ?)}");
+                    cs.setInt(1, clientId);
+                    cs.registerOutParameter(2, OracleType.NUMBER);
+                    cs.executeQuery();
+                    Helper.showInfo("Количество книг на руках у выбранного клиента: " +
+                                cs.getInt(2), Alert.AlertType.INFORMATION);
                 } catch (SQLException e) {
                     e.printStackTrace();
                     Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
-                } finally {
-                    Helper.closeRsAndStmt(rs, stmt);
                 }
             } else {
                 Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
@@ -105,26 +107,16 @@ public class ExtraController {
             Client selectedClient = clientsCB.getSelectionModel().getSelectedItem();
             if (selectedClient != null) {
                 int clientId = selectedClient.getId();
-
-                String query = "select sum(DAYS*FINE) as TOTAL_FINE " +
-                        "from (select (trunc(DATE_RET) - trunc(DATE_END)) as DAYS, FINE " +
-                        "from JOURNAL J join BOOKS B on B.ID = J.BOOK_ID join BOOK_TYPES BT on BT.ID = B.TYPE_ID " +
-                        "where DATE_RET is not null and DATE_RET > J.DATE_END and CLIENT_ID=" + clientId +")";
-                Statement stmt = null;
-                ResultSet rs = null;
                 try {
-                    stmt = connection.createStatement();
-                    rs = stmt.executeQuery(query);
-                    if (rs.next()) {
-                        int fine = rs.getInt("TOTAL_FINE");
-                        Helper.showInfo("Штраф выбранного клиента составляет: " +
-                                 + fine + " рублей", Alert.AlertType.INFORMATION);
-                    }
+                    CallableStatement cs = LoginController.connection.prepareCall("{ call CLIENTS_FINE(?, ?)}");
+                    cs.setInt(1, clientId);
+                    cs.registerOutParameter(2, OracleType.NUMBER);
+                    cs.executeQuery();
+                    Helper.showInfo("Штраф выбранного клиента составляет: " +
+                            + cs.getInt(2) + " рублей", Alert.AlertType.INFORMATION);
                 } catch (SQLException e) {
                     e.printStackTrace();
                     Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
-                } finally {
-                    Helper.closeRsAndStmt(rs, stmt);
                 }
             } else {
                 Helper.showInfo("Ничего не выбрано", Alert.AlertType.WARNING);
@@ -132,59 +124,66 @@ public class ExtraController {
         });
 
         biggestFineBtn.setOnAction(actionEvent -> {
-            String query = "select max(TOTAL_FINE) as RES from (select ((trunc(DATE_RET) - trunc(DATE_END)) * FINE)" +
-                    " as TOTAL_FINE from JOURNAL J join BOOKS B on B.ID = J.BOOK_ID" +
-                    " join BOOK_TYPES BT on BT.ID = B.TYPE_ID" +
-                    " where DATE_RET is not null and DATE_RET > J.DATE_END)";
-            Statement stmt = null;
-            ResultSet rs = null;
             try {
-                stmt = connection.createStatement();
-                rs = stmt.executeQuery(query);
-                if (rs.next()) {
-                    int maxFine = rs.getInt("RES");
-                    Helper.showInfo("Максимальный штраф составляет: "
-                            + maxFine + " рублей", Alert.AlertType.INFORMATION);
-                }
+                CallableStatement cs = LoginController.connection.prepareCall("{ call BIGGEST_FINE(?)}");
+                cs.registerOutParameter(1, OracleType.NUMBER);
+                cs.executeQuery();
+                Helper.showInfo("Максимальный штраф составляет: "
+                        + cs.getInt(1) + " рублей", Alert.AlertType.INFORMATION);
             } catch (SQLException e) {
                 e.printStackTrace();
                 Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
-            } finally {
-                Helper.closeRsAndStmt(rs, stmt);
             }
         });
 
         popularBooksBtn.setOnAction(actionEvent -> {
-            String query = "select B.NAME from JOURNAL J join BOOKS B on B.ID = J.BOOK_ID" +
-                    " group by B.NAME order by count(J.BOOK_ID) desc fetch first 3 rows only";
-            Statement stmt = null;
-            ResultSet rs = null;
             try {
-                stmt = connection.createStatement();
-                rs = stmt.executeQuery(query);
+                CallableStatement cs = LoginController.connection.prepareCall("{call POPULAR_BOOKS(?)}");
+                cs.registerOutParameter(1, OracleTypes.CURSOR);
+                cs.execute();
+                ResultSet rs = ((OracleCallableStatement)cs).getCursor(1);
                 StringBuilder stringBuilder = new StringBuilder("3 самые популярные книги:\n");
                 while (rs.next()) {
-                    stringBuilder.append(rs.getString("NAME"));
-                    stringBuilder.append("\n");
+                    stringBuilder.append(rs.getString("NAME")).append("\n");
                 }
                 Helper.showInfo(stringBuilder.toString(), Alert.AlertType.INFORMATION);
             } catch (SQLException e) {
                 e.printStackTrace();
                 Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
-            } finally {
-                Helper.closeRsAndStmt(rs, stmt);
+            }
+        });
+
+        periodFineBtn.setOnAction(actionEvent -> {
+            if (dp1.getValue() != null & dp2.getValue() != null) {
+                Date date1 = new Date(Date.from(dp1.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
+                Date date2 = new Date(Date.from(dp2.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
+            try {
+                CallableStatement cs = LoginController.connection.prepareCall("{call FINE_SUM(?, ?, ?)}");
+                cs.setDate(1, date1);
+                cs.setDate(2, date2);
+                cs.registerOutParameter(3, OracleTypes.NUMBER);
+                cs.executeQuery();
+                Helper.showInfo("Штрафы за заданный период времени составляют: " +
+                        cs.getInt(3) + " рублей", Alert.AlertType.INFORMATION);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+            }
+            } else {
+                Helper.showInfo("Укажите даты", Alert.AlertType.WARNING);
             }
         });
 
         exitBtn.setOnAction(actionEvent -> {
             exitBtn.getScene().getWindow().hide();
             try {
+                LoginController.connection.close();
                 Parent root = FXMLLoader.load(getClass().getResource("../resources/login.fxml"));
                 Stage stage = new Stage();
                 stage.setTitle("Вход");
                 stage.setScene(new Scene(root));
                 stage.show();
-            } catch (IOException e) {
+            } catch (IOException | SQLException e) {
                 e.printStackTrace();
             }
         });

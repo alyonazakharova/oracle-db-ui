@@ -57,13 +57,13 @@ public class ClientsController {
     @FXML
     private Button deleteBtn;
 
-    private final Connection connection;
+//    private final Connection connection;
     private final ObservableList<Client> clients = FXCollections.observableArrayList();
     private int selectedForUpdateClientId = -1;
 
-    public ClientsController() {
-        this.connection = LoginController.connection;
-    }
+//    public ClientsController() {
+//        this.connection = LoginController.connection;
+//    }
 
     private boolean isPassportOk(String seria, String num) {
         return seria.matches("\\d{4}") & num.matches("\\d{6}");
@@ -75,7 +75,7 @@ public class ClientsController {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = connection.createStatement();
+            stmt = LoginController.connection.createStatement();
             rs = stmt.executeQuery(query);
             while (rs.next()) {
                 clients.add(new Client(
@@ -135,7 +135,7 @@ public class ClientsController {
                             "VALUES (?, ?, ?, ?, ?)";
                     PreparedStatement pstmt = null;
                     try {
-                        pstmt = connection.prepareStatement(query);
+                        pstmt = LoginController.connection.prepareStatement(query);
                         pstmt.setString(1, firstNameField.getText());
                         pstmt.setString(2, lastNameField.getText());
                         pstmt.setString(3, fatherNameField.getText());
@@ -184,7 +184,7 @@ public class ClientsController {
                     "' WHERE ID=" + selectedForUpdateClientId;
             Statement stmt = null;
             try {
-                stmt = connection.createStatement();
+                stmt = LoginController.connection.createStatement();
                 stmt.executeQuery(query);
                 fillTable();
                 Helper.showInfo("Данные обновлены", Alert.AlertType.INFORMATION);
@@ -210,7 +210,7 @@ public class ClientsController {
                 String query = "DELETE FROM CLIENTS WHERE ID=" + clientId;
                 Statement stmt = null;
                 try {
-                    stmt = connection.createStatement();
+                    stmt = LoginController.connection.createStatement();
                     stmt.executeQuery(query);
                     fillTable();
                     Helper.showInfo("Выбранный тип удален", Alert.AlertType.INFORMATION);
