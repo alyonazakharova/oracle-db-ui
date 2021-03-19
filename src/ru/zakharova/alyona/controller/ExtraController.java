@@ -50,6 +50,9 @@ public class ExtraController {
     @FXML
     private Button periodFineBtn;
 
+    @FXML
+    private Button periodTopBtn;
+
 //    private final Connection connection;
 //
 //    public ExtraController() {
@@ -169,6 +172,31 @@ public class ExtraController {
                 e.printStackTrace();
                 Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
             }
+            } else {
+                Helper.showInfo("Укажите даты", Alert.AlertType.WARNING);
+            }
+        });
+
+        periodTopBtn.setOnAction(actionEvent -> {
+            if (dp1.getValue() != null & dp2.getValue() != null) {
+                Date date1 = new Date(Date.from(dp1.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
+                Date date2 = new Date(Date.from(dp2.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
+                try {
+                    CallableStatement cs = LoginController.connection.prepareCall("{call TOP_3_BOOKS_IN_PERIOD(?, ?, ?)}");
+                    cs.setDate(1, date1);
+                    cs.setDate(2, date2);
+                    cs.registerOutParameter(3, OracleTypes.CURSOR);
+                    cs.execute();
+                    ResultSet rs = ((OracleCallableStatement)cs).getCursor(3);
+                    StringBuilder stringBuilder = new StringBuilder("3 самые популярные книги за заданный период:\n");
+                    while (rs.next()) {
+                        stringBuilder.append(rs.getString("NAME")).append("\n");
+                    }
+                    Helper.showInfo(stringBuilder.toString(), Alert.AlertType.INFORMATION);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
+                }
             } else {
                 Helper.showInfo("Укажите даты", Alert.AlertType.WARNING);
             }

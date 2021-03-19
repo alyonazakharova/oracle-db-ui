@@ -44,10 +44,10 @@ END;
 
 
 
-create or replace procedure top_3_books(date1 in date, date2 in date, res out sys_refcursor) as
-begin
-    open res for
-    select B.NAME from JOURNAL J join BOOKS B on B.ID = J.BOOK_ID
-    where trunc(DATE_BEG) between date1 and date2
-    group by B.NAME order by count(J.BOOK_ID) desc fetch first 3 rows only;
-end;
+CREATE OR REPLACE PROCEDURE TOP_3_BOOKS_IN_PERIOD(date1 IN DATE, date2 IN DATE, res OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN res FOR
+    SELECT B.NAME FROM JOURNAL J JOIN BOOKS B ON B.ID = J.BOOK_ID
+    WHERE TRUNC(DATE_BEG) BETWEEN date1 AND date2
+    GROUP BY B.NAME ORDER BY COUNT(J.BOOK_ID) DESC FETCH FIRST 3 ROWS ONLY;
+END;

@@ -10,11 +10,12 @@
       <ComboBox fx:id="clientsCB" layoutX="87.0" layoutY="63.0" prefHeight="26.0" prefWidth="567.0" promptText="ФИО" />
       <Button fx:id="checkBooksBtn" layoutX="87.0" layoutY="100.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="274.0" text="Проверить книги на руках" />
       <Button fx:id="checkFineBtn" layoutX="380.0" layoutY="100.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="273.0" text="Проверить штраф" />
-      <Button fx:id="biggestFineBtn" layoutX="87.0" layoutY="176.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="567.0" text="Показать самый большой штраф" />
-      <Button fx:id="popularBooksBtn" layoutX="87.0" layoutY="211.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="567.0" text="Показать три самые популярные книги" />
+      <Button fx:id="biggestFineBtn" layoutX="88.0" layoutY="223.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="274.0" text="Показать самый большой штраф" />
+      <Button fx:id="popularBooksBtn" layoutX="379.0" layoutY="223.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="274.0" text="Показать три самые популярные книги" />
       <Button fx:id="exitBtn" layoutX="306.0" layoutY="410.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="129.0" text="Выйти" />
-      <DatePicker fx:id="dp1" layoutX="87.0" layoutY="258.0" />
-      <DatePicker fx:id="dp2" layoutX="274.0" layoutY="258.0" />
-      <Button fx:id="periodFineBtn" layoutX="466.0" layoutY="257.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="187.0" text="Штраф за период" />
+      <DatePicker fx:id="dp1" layoutX="87.0" layoutY="183.0" prefHeight="26.0" prefWidth="138.0" />
+      <DatePicker fx:id="dp2" layoutX="238.0" layoutY="183.0" prefHeight="26.0" prefWidth="122.0" />
+      <Button fx:id="periodFineBtn" layoutX="380.0" layoutY="183.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="121.0" text="Штрафы" />
+      <Button fx:id="periodTopBtn" layoutX="515.0" layoutY="183.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="138.0" text="Топ 3 книги" />
    </children>
 </AnchorPane>
