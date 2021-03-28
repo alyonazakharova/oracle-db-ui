@@ -75,7 +75,7 @@ public class LoginController {
                     try {
                         Parent root = FXMLLoader.load(getClass().getResource("../resources/main-window.fxml"));
                         Stage stage = new Stage();
-                        stage.setTitle("Библиотека им. А. А. Захаровой))00))0)");
+                        stage.setTitle("Библиотека");
                         stage.setScene(new Scene(root));
                         stage.show();
                     } catch (IOException e) {

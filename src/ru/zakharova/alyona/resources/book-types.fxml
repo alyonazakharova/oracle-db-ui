@@ -6,7 +6,6 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-
 <AnchorPane prefHeight="472.0" prefWidth="730.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.zakharova.alyona.controller.BookTypesController">
    <children>
       <TableView fx:id="bookTypesTable" layoutX="14.0" layoutY="12.0" prefHeight="448.0" prefWidth="448.0">
@@ -21,7 +20,7 @@
       <TextField fx:id="daysField" layoutX="481.0" layoutY="72.0" prefHeight="26.0" prefWidth="230.0" promptText="Кол-во дней" />
       <TextField fx:id="fineField" layoutX="481.0" layoutY="107.0" prefHeight="26.0" prefWidth="230.0" promptText="Штраф" />
       <Button fx:id="addBtn" layoutX="481.0" layoutY="143.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="230.0" text="Добавить" />
-      <Button fx:id="updateBtn" layoutX="481.0" layoutY="177.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="230.0" text="Обновить" />
+      <Button fx:id="updateBtn" layoutX="481.0" layoutY="177.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="230.0" text="Изменить" />
       <Button fx:id="deleteBtn" layoutX="481.0" layoutY="210.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="230.0" text="Удалить" />
    </children>
 </AnchorPane>
