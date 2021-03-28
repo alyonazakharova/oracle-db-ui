@@ -49,14 +49,9 @@ public class BooksController {
     @FXML
     private Button refreshBtn;
 
-//    private final Connection connection;
     private int selectedBookTypeId;
     private final ObservableList<Book> books = FXCollections.observableArrayList();
     private int selectedForUpdateBookId = -1;
-
-//    public BooksController() {
-//        this.connection = LoginController.connection;
-//    }
 
     private void initNewBookTypeCB() {
         ObservableList<BookType> types = FXCollections.observableArrayList();
@@ -72,9 +67,7 @@ public class BooksController {
                         rs.getString("NAME")));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            Helper.showInfo("Кто-то чё-то плохо закодил, " +
-                    "и combobox с типами книг не отработал нормально", Alert.AlertType.WARNING);
+            Helper.showInfo(e.getMessage(), Alert.AlertType.WARNING);
         } finally {
             Helper.closeRsAndStmt(rs, stmt);
         }
@@ -113,13 +106,11 @@ public class BooksController {
     private void clearInput() {
         newBookName.setText("");
         newBookCount.setText("");
-//        newBookTypeCB.getSelectionModel().clearSelection();
     }
 
     @FXML
     void initialize() {
         idColumn.setCellValueFactory(new PropertyValueFactory<Book, Integer>("id"));
-//        idColumn.setVisible(false);
         bookNameColumn.setCellValueFactory(new PropertyValueFactory<Book, String>("name"));
         countColumn.setCellValueFactory(new PropertyValueFactory<Book, Integer>("count"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<Book, String>("type"));
@@ -172,8 +163,6 @@ public class BooksController {
             }
             selectedForUpdateBookId = selectedBook.getId();
             newBookName.setText(selectedBook.getName());
-//            String bookType = selectedBook.getType();
-//            newBookTypeCB.getSelectionModel().select(bookType);
             newBookCount.setText(String.valueOf(selectedBook.getCount()));
         });
 

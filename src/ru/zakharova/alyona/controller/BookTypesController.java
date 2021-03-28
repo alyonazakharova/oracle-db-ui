@@ -45,13 +45,8 @@ public class BookTypesController {
     @FXML
     private Button deleteBtn;
 
-//    private final Connection connection;
     private final ObservableList<BookType> booksTypes = FXCollections.observableArrayList();
     private int selectedForUpdateTypeId = -1;
-
-//    public BookTypesController() {
-//        this.connection = LoginController.connection;
-//    }
 
     private void loadBookTypes() {
         String query = "SELECT ID, NAME, DAY_COUNT, FINE FROM BOOK_TYPES";

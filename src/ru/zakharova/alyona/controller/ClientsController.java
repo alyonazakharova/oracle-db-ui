@@ -57,13 +57,8 @@ public class ClientsController {
     @FXML
     private Button deleteBtn;
 
-//    private final Connection connection;
     private final ObservableList<Client> clients = FXCollections.observableArrayList();
     private int selectedForUpdateClientId = -1;
-
-//    public ClientsController() {
-//        this.connection = LoginController.connection;
-//    }
 
     private boolean isPassportOk(String seria, String num) {
         return seria.matches("\\d{4}") & num.matches("\\d{6}");

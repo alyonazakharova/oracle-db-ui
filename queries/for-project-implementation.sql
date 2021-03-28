@@ -101,3 +101,34 @@ BEGIN
     WHERE B.ID=bookId;
     RES := oneDayFine * daysCount;
 END;
+
+
+-- начальные данные
+insert into book_types (name, fine, day_count) values ('Обычная', 10, 60);
+insert into book_types (name, fine, day_count) values ('Редкая', 50, 21);
+insert into book_types (name, fine, day_count) values ('Уникальная', 300, 7);
+
+insert into books (name, cnt, type_id) values ('Книга 1', 100, 1);
+insert into books (name, cnt, type_id) values ('Книга 2', 50, 2);
+insert into books (name, cnt, type_id) values ('Книга 3', 10, 3);
+insert into books (name, cnt, type_id) values ('Книга, которой нет', 0, 3);
+insert into books (name, cnt, type_id) values ('Библия', 10, 2);
+insert into books (name, cnt, type_id) values ('Самоучитель по C++', 30, 1);
+insert into books (name, cnt, type_id) values ('Супер книжка', 20, 1);
+
+
+insert into clients (first_name, last_name, father_name, passport_seria, passport_num)
+    values ('Алёна', 'Захарова', 'Андреевна', '4018', '123456');
+insert into clients (first_name, last_name, father_name, passport_seria, passport_num)
+    values ('Иван', 'Иванов', 'Иванович', '4012', '654321');
+insert into clients (first_name, last_name, father_name, passport_seria, passport_num)
+    values ('Петр', 'Петрович', 'Петров', '1234', '567890');
+insert into clients (first_name, last_name, father_name, passport_seria, passport_num)
+    values ('Дмитрий', 'Шварц', 'Александрович', '9876', '123987');
+insert into clients (first_name, last_name, father_name, passport_seria, passport_num)
+    values ('Артём', 'Устинов', 'Германович', '4444', '6666666');
+
+begin
+update journal set DATE_RET='12-03-21' where id=10;
+commit;
+end;

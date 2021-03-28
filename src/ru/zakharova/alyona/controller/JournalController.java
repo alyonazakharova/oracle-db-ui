@@ -5,7 +5,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import oracle.jdbc.OracleCallableStatement;
 import oracle.jdbc.OracleTypes;
 import ru.zakharova.alyona.Helper;
 import ru.zakharova.alyona.dto.Book;
@@ -58,15 +57,10 @@ public class JournalController {
     @FXML
     private Button refreshBtn;
 
-//    private final Connection connection;
     private int selectedBookId;
     private int selectedClientId;
     private final SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy");
     private final ObservableList<JournalRecord> records = FXCollections.observableArrayList();
-
-//    public JournalController() {
-//        this.connection = LoginController.connection;
-//    }
 
     void initClientCB() {
         ObservableList<Client> clients = FXCollections.observableArrayList();
@@ -197,7 +191,6 @@ public class JournalController {
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(today);
                 calendar.add(Calendar.DAY_OF_MONTH, getDaysCount(selectedBookId));
-//                calendar.add(Calendar.DAY_OF_MONTH, -10);
                 java.sql.Date endDate = new java.sql.Date(calendar.getTimeInMillis());
 
                 String query = "INSERT INTO JOURNAL (BOOK_ID, CLIENT_ID, DATE_BEG, DATE_END) VALUES (?, ?, ?, ?)";
@@ -208,8 +201,6 @@ public class JournalController {
                     pstmt.setInt(2, selectedClientId);
                     pstmt.setDate(3, beginDate);
                     pstmt.setDate(4, endDate);
-//                    pstmt.setDate(3, endDate);
-//                    pstmt.setDate(4, endDate);
                     pstmt.executeUpdate();
                     fillTable();
                 } catch (SQLException e)

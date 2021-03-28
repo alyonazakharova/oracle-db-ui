@@ -5,7 +5,7 @@ SELECT J.ID, B.NAME, C2.LAST_NAME, C2.FIRST_NAME, C2.FATHER_NAME, J.DATE_BEG
 FROM JOURNAL J
          JOIN BOOKS B ON B.ID = J.BOOK_ID
          JOIN CLIENTS C2 ON C2.ID = J.CLIENT_ID
-WHERE J.DATE_BEG BETWEEN to_date('03-03-2021', 'dd-mm-yyyy') AND to_date('10-03-2021', 'dd-mm-yyyy');
+WHERE J.DATE_BEG BETWEEN to_date('01-03-2021', 'dd-mm-yyyy') AND to_date('31-03-2021', 'dd-mm-yyyy');
 
 
 -- Создать представление, отображающее всех читателей и количество книг, находящихся у них на руках.

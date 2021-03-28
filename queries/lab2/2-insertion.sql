@@ -39,14 +39,16 @@ DECLARE
 BEGIN
     SAVEPOINT sp;
 
-    clientId := 1;
-    bookId := 12;
+    clientId := 4;
+    bookId :=7;
 
     SELECT DAY_COUNT INTO bookDayCount
     FROM BOOK_TYPES BT JOIN BOOKS B on BT.ID = B.TYPE_ID where B.ID=bookId;
 
     INSERT INTO JOURNAL (BOOK_ID, CLIENT_ID, DATE_BEG, DATE_END)
     VALUES (bookId, clientId, current_date, current_date + bookDayCount);
+
+    UPDATE BOOKS SET CNT=CNT-1 WHERE ID=bookId;
 
     SELECT COUNT(*) INTO booksNumber FROM JOURNAL
     WHERE CLIENT_ID = clientId AND DATE_RET IS NULL ;

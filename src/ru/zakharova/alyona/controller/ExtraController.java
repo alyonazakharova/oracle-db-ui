@@ -53,11 +53,6 @@ public class ExtraController {
     @FXML
     private Button periodTopBtn;
 
-//    private final Connection connection;
-//
-//    public ExtraController() {
-//        this.connection = LoginController.connection;
-//    }
 
     private void initClientsCB() {
         ObservableList<Client> clients = FXCollections.observableArrayList();
